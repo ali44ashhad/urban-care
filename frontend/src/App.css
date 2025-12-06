@@ -1,0 +1,128 @@
+/*  
+│  ├─ pages/                     
+│  │  ├─ auth/
+│  │  │  ├─ Login.jsx
+│  │  │  ├─ Register.jsx
+│  │  │  ├─ ForgotPassword.jsx
+│  │  │  └─ ResetPassword.jsx
+│  │  ├─ client/
+│  │  │  ├─ ClientHome.jsx
+│  │  │  ├─ ServiceDetail.jsx
+│  │  │  ├─ BookingFlow/
+│  │  │  │  ├─ PickService.jsx
+│  │  │  │  ├─ SelectSlot.jsx
+│  │  │  │  ├─ AddressForm.jsx
+│  │  │  │  ├─ PaymentPlaceholder.jsx
+│  │  │  │  └─ Confirmation.jsx
+│  │  │  ├─ MyBookings.jsx
+│  │  │  ├─ BookingDetail.jsx
+│  │  │  ├─ WarrantyRequests.jsx
+│  │  │  └─ Reviews.jsx
+│  │  ├─ provider/
+│  │  │  ├─ ProviderDashboard.jsx
+│  │  │  ├─ AssignedBookings.jsx
+│  │  │  ├─ BookingDetail.jsx
+│  │  │  ├─ Availability.jsx
+│  │  │  ├─ Profile.jsx
+│  │  │  └─ WarrantyManagement.jsx
+│  │  ├─ admin/
+│  │  │  ├─ AdminDashboard.jsx
+│  │  │  ├─ ServicesMgmt.jsx
+│  │  │  ├─ ProvidersMgmt.jsx
+│  │  │  ├─ BookingsMgmt.jsx
+│  │  │  ├─ WarrantyMgmt.jsx
+│  │  │  ├─ ReviewsMgmt.jsx
+│  │  │  └─ Analytics.jsx
+│  │  ├─ public/
+│  │  │  ├─ Landing.jsx
+│  │  │  ├─ About.jsx
+│  │  │  └─ Contact.jsx
+│  │  └─ errors/
+│  │     ├─ NotFound.jsx
+│  │     └─ ServerError.jsx
+│  ├─ components/                  # reusable UI components
+│  │  ├─ layout/
+│  │  │  ├─ Header.jsx
+│  │  │  ├─ Footer.jsx
+│  │  │  ├─ Sidebar.jsx
+│  │  │  └─ AdminShell.jsx
+│  │  ├─ ui/
+│  │  │  ├─ Button.jsx
+│  │  │  ├─ Card.jsx
+│  │  │  ├─ Modal.jsx
+│  │  │  ├─ Input.jsx
+│  │  │  ├─ Select.jsx
+│  │  │  ├─ DatePicker.jsx
+│  │  │  ├─ TimeSlotPicker.jsx
+│  │  │  ├─ Avatar.jsx
+│  │  │  └─ RatingStars.jsx
+│  │  ├─ forms/
+│  │  │  ├─ AuthForm.jsx
+│  │  │  ├─ ServiceForm.jsx
+│  │  │  ├─ ProviderOnboardForm.jsx
+│  │  │  └─ WarrantyForm.jsx
+│  │  ├─ lists/
+│  │  │  ├─ ServiceList.jsx
+│  │  │  ├─ ProviderList.jsx
+│  │  │  ├─ BookingList.jsx
+│  │  │  └─ ReviewList.jsx
+│  │  └─ notifications/
+│  │     ├─ NotificationBell.jsx
+│  │     ├─ NotificationsPanel.jsx
+│  │     └─ ToastManager.jsx
+│  ├─ hooks/
+│  │  ├─ useAuth.js
+│  │  ├─ useFetch.js
+│  │  ├─ usePagination.js
+│  │  ├─ useSocket.js              
+│  │  └─ useForm.js
+│  ├─ services/                   
+│  │  ├─ apiClient.js              
+│  │  ├─ auth.service.js
+│  │  ├─ services.service.js
+│  │  ├─ bookings.service.js
+│  │  ├─ providers.service.js
+│  │  ├─ admin.service.js
+│  │  ├─ reviews.service.js
+│  │  ├─ warranty.service.js
+│  │  ├─ notifications.service.js
+│  │  └─ payments.service.js       
+│  ├─ context/                    
+│  │  ├─ AuthContext.jsx
+│  │  ├─ NotificationContext.jsx
+│  │  └─ ProviderContext.jsx
+│  ├─ store/                       # optional: Redux / Zustand slices if chosen
+│  │  └─ (e.g. redux slices or zustand store files)
+│  ├─ utils/
+│  │  ├─ validators.js             # form validation helpers (Yup schemas)
+│  │  ├─ formatters.js
+│  │  ├─ routes.js                 # route definitions & role-based redirects
+│  │  └─ constants.js
+│  ├─ libs/
+│  │  ├─ socket/                   # socket.io client setup
+│  │  └─ analytics/                # Google Analytics / Amplitude wrappers
+│  ├─ styles/
+│  │  ├─ components.css
+│  │  └─ utilities.css
+│  ├─ tests/                       # component & integration tests
+│  │  ├─ jest.setup.js
+│  │  ├─ components/
+│  │  └─ pages/
+│  └─ typings/                      # TypeScript type declarations (if TS)
+│     └─ global.d.ts
+├─ cypress/                         # e2e tests (optional)
+│  └─ integration/
+├─ .eslintrc.js
+├─ .prettierrc
+├─ vetur.config.js (if using Vue — ignore if using React)
+├─ storybook/                       # optional: Storybook config for components
+│  ├─ .storybook/
+│  └─ stories/
+├─ scripts/
+│  ├─ build.sh
+│  └─ deploy-vercel.sh
+├─ docker/
+│  ├─ Dockerfile
+│  └─ nginx.conf
+├─ vercel.json                      # Vercel deployment hints / redirects
+└─ netlify.toml                     # if deploying to Netlify (optional) */

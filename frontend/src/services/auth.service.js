@@ -1,0 +1,36 @@
+/**
+ * auth.service.js
+ * Authentication service - handles login, register, logout
+ *
+ * Endpoints:
+ * - POST /auth/register       => register new user
+ * - POST /auth/login          => login user
+ */
+
+import api from './apiClient';
+
+const authService = {
+  register: (payload) => api.post('/auth/register', payload),
+  login: (payload) => api.post('/auth/login', payload),
+  updateProfile: (payload) => api.put('/auth/profile', payload),
+  changePassword: (payload) => api.post('/auth/change-password', payload),
+  uploadAvatar: (file) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return api.post('/auth/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+  logout: () => {
+    localStorage.removeItem('token');
+    delete api.defaults.headers.common.Authorization;
+  },
+  setToken: (token) => {
+    localStorage.setItem('token', token);
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+  }
+};
+
+export default authService;

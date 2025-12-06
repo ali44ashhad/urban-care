@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:7
+    container_name: urban-clap-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: urban-clap
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - urban-clap-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: urban-clap-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - urban-clap-network
+
+  # Backend API
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: urban-clap-backend
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:admin123@mongodb:27017/urban-clap?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ../logs:/app/logs
+    networks:
+      - urban-clap-network
+
+  # Worker (optional - for background jobs)
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: urban-clap-worker
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:admin123@mongodb:27017/urban-clap?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    command: node src/workers/index.js
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - urban-clap-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  urban-clap-network:
+    driver: bridge

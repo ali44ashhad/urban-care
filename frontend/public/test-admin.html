@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin API Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Admin API Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:5000/api/v1';
+        const results = document.getElementById('results');
+        
+        async function testAPIs() {
+            results.innerHTML = '<p>Testing APIs...</p>';
+            
+            try {
+                // Test Services
+                const servicesRes = await axios.get(`${API_BASE}/services`);
+                results.innerHTML += `<p>✅ Services: ${servicesRes.data.items?.length || 0} items</p>`;
+                
+                // Test Providers
+                const providersRes = await axios.get(`${API_BASE}/providers`);
+                results.innerHTML += `<p>✅ Providers: ${providersRes.data.items?.length || 0} items</p>`;
+                
+                // Test Bookings (requires auth)
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const bookingsRes = await axios.get(`${API_BASE}/bookings`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    results.innerHTML += `<p>✅ Bookings: ${bookingsRes.data.items?.length || 0} items</p>`;
+                } else {
+                    results.innerHTML += `<p>⚠️ No token found in localStorage</p>`;
+                }
+                
+            } catch (err) {
+                results.innerHTML += `<p style="color:red">❌ Error: ${err.message}</p>`;
+                console.error(err);
+            }
+        }
+        
+        testAPIs();
+    </script>
+</body>
+</html>
