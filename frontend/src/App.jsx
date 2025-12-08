@@ -10,6 +10,7 @@ import LoadingSpinner from './components/ui/LoadingSpinner'
 import NotFound from './pages/errors/NotFound'
 import ServerError from './pages/errors/ServerError'
 import CategoryServices from './pages/public/CategoryServices.jsx'
+import ScrollToTop from './components/layout/ScrollToTop.jsx'
 
 // Lazy load large route bundles for performance
 const Landing = lazy(() => import('./pages/public/Landing'))
@@ -58,6 +59,7 @@ const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'))
 function PublicLayout() {
   return (
     <>
+     <ScrollToTop/>
       <Header />
       <main>
         <Outlet />
