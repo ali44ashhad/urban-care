@@ -5,6 +5,7 @@ import categoriesService from '../../services/categories.service';
 import reviewsService from '../../services/reviews.service';
 import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 export default function CategoryServices() {
   const { category } = useParams();
@@ -124,9 +125,7 @@ export default function CategoryServices() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <LoadingSpinner/>
     );
   }
 

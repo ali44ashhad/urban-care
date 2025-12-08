@@ -3,7 +3,7 @@ import servicesService from '../../services/services.service'
 import ServiceList from '../../components/lists/ServiceList'
 import HeroModern from '../../components/HeroModern'
 import HowItWorks from '../../components/HowItWorks'
-import ServiceModal from '../../components/ServiceModal'
+import ServiceModal from '../../components/ServiceDetailModal'
 import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
