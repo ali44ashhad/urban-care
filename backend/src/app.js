@@ -21,8 +21,13 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // mount routes
 app.use('/api/v1', routes);
 
+app.get('/health', (req, res) => {
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  const dbState = mongoose.connection.readyState;
+  res.json({ ok: true, dbState });
+});
 // health
-app.get('/health', (req, res) => res.json({ ok: true }));
+// app.get('/health', (req, res) => res.json({ ok: true }));
 
 // error handler
 app.use(errorHandler);
