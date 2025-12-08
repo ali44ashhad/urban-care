@@ -11,9 +11,7 @@ export default function ClientHome() {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
   const [selectedService, setSelectedService] = useState(null)
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -45,7 +43,6 @@ export default function ClientHome() {
 
   const openBooking = useCallback((service) => {
     setSelectedService(service)
-    setIsBookingModalOpen(true)
     // set draft for booking flow and navigate to pick service
     sessionStorage.setItem('bookingDraft', JSON.stringify({ service }))
     navigate('/client/booking/pick')
@@ -54,7 +51,7 @@ export default function ClientHome() {
   return (
     <div className="min-h-screen bg-gray-50">
       <HeroModern
-        onSearch={(term) => { setSearchTerm(term || '') ; document.querySelector('#services-scroll')?.scrollIntoView({ behavior: 'smooth' }) }}
+        onSearch={() => { document.querySelector('#services-scroll')?.scrollIntoView({ behavior: 'smooth' }) }}
         onBook={(service) => openBooking(service)}
       />
 

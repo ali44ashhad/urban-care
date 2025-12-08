@@ -1,8 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/api/v1/:path*",
-      "destination": "https://urban-care-olive.vercel.app/api/v1/:path*"
-    }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
