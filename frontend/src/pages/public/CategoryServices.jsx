@@ -6,10 +6,12 @@ import reviewsService from '../../services/reviews.service';
 import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { useAuthContext } from '../../context/AuthContext';
 
 export default function CategoryServices() {
   const { category } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
@@ -86,6 +88,15 @@ export default function CategoryServices() {
 
 
   function handleAddToCart(service) {
+    // Check if user is logged in
+    if (!user) {
+      window.dispatchEvent(new CustomEvent('app:toast', {
+        detail: { message: 'Please login to add service to cart', type: 'warning' }
+      }))
+      navigate('/auth/login', { state: { from: window.location.pathname } })
+      return
+    }
+
     // Get existing cart
     const existingDraft = JSON.parse(sessionStorage.getItem('bookingDraft') || '{}');
     const cartItems = existingDraft.items || [];
@@ -119,8 +130,10 @@ export default function CategoryServices() {
     sessionStorage.setItem('bookingDraft', JSON.stringify(existingDraft));
     window.dispatchEvent(new Event('cartUpdated'));
     
-    // Show success message (you can add a toast notification here)
-    alert('Service added to cart!');
+    // Show success message
+    window.dispatchEvent(new CustomEvent('app:toast', {
+      detail: { message: 'Service added to cart!', type: 'success' }
+    }))
   }
 
   if (loading) {

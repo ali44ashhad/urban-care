@@ -4,9 +4,11 @@ import Button from './ui/Button'
 import RatingStars from './ui/RatingStars'
 import reviewsService from '../services/reviews.service'
 import LoadingSpinner from './ui/LoadingSpinner'
+import { useAuthContext } from '../context/AuthContext'
 
 export default function ServiceDetailModal({ service, onClose, onAddToCart }) {
   const navigate = useNavigate()
+  const { user } = useAuthContext()
   const [selectedVariant, setSelectedVariant] = useState(service?.pricingOptions?.[0] || null)
   const [reviews, setReviews] = useState([])
   const [loadingReviews, setLoadingReviews] = useState(false)
@@ -31,6 +33,21 @@ export default function ServiceDetailModal({ service, onClose, onAddToCart }) {
   if (!service) return null
 
   const handleAddToCart = () => {
+    // Check if user is logged in
+    if (!user) {
+      // Show warning toast
+      window.dispatchEvent(new CustomEvent('app:toast', {
+        detail: { message: 'Please login to add service to cart', type: 'warning' }
+      }))
+      
+      // Close modal
+      onClose()
+      
+      // Redirect to login with return URL
+      navigate('/auth/login', { state: { from: window.location.pathname } })
+      return
+    }
+
     // Store service in session for booking flow
     const cartItem = {
       service,

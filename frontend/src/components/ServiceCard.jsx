@@ -1,6 +1,10 @@
 import React, { useState, useMemo } from "react";
+import { useAuthContext } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 function ServiceCardComponent({ service, onSelect, onBook, isSelected = false }) {
+  const { user } = useAuthContext()
+  const navigate = useNavigate()
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -170,6 +174,13 @@ function ServiceCardComponent({ service, onSelect, onBook, isSelected = false })
         {/* CTA Button */}
         <button
           onClick={() => {
+            if (!user) {
+              window.dispatchEvent(new CustomEvent('app:toast', {
+                detail: { message: 'Please login to add service to cart', type: 'warning' }
+              }))
+              navigate('/auth/login', { state: { from: window.location.pathname } })
+              return
+            }
             if (onSelect) onSelect(service);
             if (onBook) onBook(service);
           }}
