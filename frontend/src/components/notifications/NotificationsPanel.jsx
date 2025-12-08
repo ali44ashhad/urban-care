@@ -16,14 +16,14 @@ export default function NotificationsPanel({ onClose = ()=>{}, onReadAll = ()=>{
   async function markRead(id) {
     try {
       await notificationsService.markRead(id)
-      setItems(prev => prev.map(i => i._id === id ? { ...i, read: true } : i))
+      setItems(prev => prev.map(i => i._id === id ? { ...i, status: 'sent' } : i))
     } catch (err) { console.warn(err) }
   }
 
   async function markAll() {
     try {
-      await Promise.all(items.filter(i => !i.read).map(i => notificationsService.markRead(i._id)))
-      setItems(prev => prev.map(i => ({ ...i, read: true })))
+      await Promise.all(items.filter(i => i.status === 'queued').map(i => notificationsService.markRead(i._id)))
+      setItems(prev => prev.map(i => ({ ...i, status: 'sent' })))
       onReadAll()
     } catch (err) { console.warn(err) }
   }
@@ -44,14 +44,18 @@ export default function NotificationsPanel({ onClose = ()=>{}, onReadAll = ()=>{
         ) : items.length === 0 ? (
           <div className="text-gray-500">No notifications</div>
         ) : items.map(it => (
-          <div key={it._id} className={`p-3 rounded-lg ${it.read ? 'bg-gray-50' : 'bg-white'}`}>
+          <div key={it._id} className={`p-3 rounded-lg border ${it.status === 'sent' ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'}`}>
             <div className="flex items-start justify-between">
-              <div>
-                <div className="font-medium text-sm">{it.title || it.type}</div>
-                <div className="text-xs text-gray-500 mt-1">{it.payload?.message || it.message}</div>
+              <div className="flex-1">
+                <div className="font-medium text-sm">{it.type?.replace(/_/g, ' ').toUpperCase()}</div>
+                <div className="text-xs text-gray-600 mt-1">{it.payload?.message || 'Notification'}</div>
                 <div className="text-xs text-gray-400 mt-1">{new Date(it.createdAt).toLocaleString()}</div>
               </div>
-              {!it.read && <button onClick={() => markRead(it._id)} className="text-sm text-blue-600">Mark read</button>}
+              {it.status === 'queued' && (
+                <button onClick={() => markRead(it._id)} className="text-sm text-blue-600 hover:text-blue-700 font-medium ml-2">
+                  Mark read
+                </button>
+              )}
             </div>
           </div>
         ))}

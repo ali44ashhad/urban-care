@@ -8,12 +8,67 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [count, setCount] = useState(0)
   const ref = useRef(null)
+  const previousCountRef = useRef(0)
+
+  // Function to play notification sound
+  const playNotificationSound = () => {
+    try {
+      // Create audio context
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+
+      // Configure sound (pleasant notification tone)
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1)
+      oscillator.type = 'sine'
+
+      // Volume envelope
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3)
+
+      // Play sound
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.3)
+    } catch (err) {
+      console.warn('Could not play notification sound:', err)
+    }
+  }
 
   useEffect(() => {
     if (!user) { setCount(0); return }
+    
     let mounted = true
-    notificationsService.list().then(res => { if (mounted) setCount(res.data.filter(n => !n.read).length) }).catch(()=>{})
-    return () => mounted = false
+    
+    // Load notifications immediately
+    const loadNotifications = () => {
+      notificationsService.list().then(res => { 
+        if (mounted) {
+          const unreadCount = res.data.filter(n => n.status === 'queued').length
+          
+          // Play sound if there are new notifications
+          if (unreadCount > previousCountRef.current && previousCountRef.current !== 0) {
+            playNotificationSound()
+          }
+          
+          previousCountRef.current = unreadCount
+          setCount(unreadCount)
+        }
+      }).catch(()=>{})
+    }
+    
+    loadNotifications()
+    
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(loadNotifications, 30000)
+    
+    return () => {
+      mounted = false
+      clearInterval(interval)
+    }
   }, [user])
 
   useEffect(() => {

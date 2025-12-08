@@ -9,7 +9,7 @@ const { Schema } = mongoose;
  * 2. Admin assigns service agent → providerId=User._id (where role='provider')
  * 3. Provider accepts → status='accepted'
  * 4. Provider starts work → status='in_progress'
- * 5. Provider completes & uploads warranty slip → status='completed', warrantyExpiresAt set
+ * 5. Provider completes & u ploads warranty slip → status='completed', warrantyExpiresAt set
  * 6. Client can claim warranty within 14 days if needed
  */
 

@@ -6,11 +6,12 @@ const logger = require('../utils/logger');
 // @access  Private
 exports.getNotifications = async (req, res, next) => {
   try {
-    const notifications = await Notification.find({ user: req.user.id })
+    const userId = req.user._id || req.user.id;
+    const notifications = await Notification.find({ toUserId: userId })
       .sort('-createdAt')
       .limit(50);
 
-    res.json({ success: true, count: notifications.length, notifications });
+    res.json(notifications);
   } catch (error) {
     logger.error(`Get notifications error: ${error.message}`);
     next(error);
@@ -22,9 +23,10 @@ exports.getNotifications = async (req, res, next) => {
 // @access  Private
 exports.markAsRead = async (req, res, next) => {
   try {
+    const userId = req.user._id || req.user.id;
     const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
-      { isRead: true },
+      { _id: req.params.id, toUserId: userId },
+      { status: 'sent' },
       { new: true }
     );
 
@@ -32,7 +34,7 @@ exports.markAsRead = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Notification not found' });
     }
 
-    res.json({ success: true, notification });
+    res.json(notification);
   } catch (error) {
     logger.error(`Mark notification as read error: ${error.message}`);
     next(error);
@@ -44,9 +46,10 @@ exports.markAsRead = async (req, res, next) => {
 // @access  Private
 exports.markAllAsRead = async (req, res, next) => {
   try {
+    const userId = req.user._id || req.user.id;
     await Notification.updateMany(
-      { user: req.user.id, isRead: false },
-      { isRead: true }
+      { toUserId: userId, status: 'queued' },
+      { status: 'sent' }
     );
 
     res.json({ success: true, message: 'All notifications marked as read' });
@@ -61,9 +64,10 @@ exports.markAllAsRead = async (req, res, next) => {
 // @access  Private
 exports.deleteNotification = async (req, res, next) => {
   try {
+    const userId = req.user._id || req.user.id;
     const notification = await Notification.findOneAndDelete({
       _id: req.params.id,
-      user: req.user.id
+      toUserId: userId
     });
 
     if (!notification) {

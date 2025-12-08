@@ -32,6 +32,21 @@ export default function AdminProfile() {
     }
   }, [user])
 
+  // Fetch fresh profile data on mount
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await authService.getProfile()
+        if (res.data) {
+          setUser(res.data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile:', err)
+      }
+    }
+    fetchProfile()
+  }, [])
+
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }

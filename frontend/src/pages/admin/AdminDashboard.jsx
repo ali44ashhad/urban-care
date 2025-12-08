@@ -46,12 +46,17 @@ export default function AdminDashboard() {
           'Providers:', providers.length)
 
         if (mounted) {
+          // Calculate revenue only from completed and warranty_claimed bookings
+          const completedBookings = bookings.filter(b => b.status === 'completed' || b.status === 'warranty_claimed')
+          const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.price || 0), 0)
+          
           setStats({
             totalBookings: bookings.length,
             totalServices: services.length,
             totalProviders: providers.length,
             recentBookings: bookings.slice(0, 5).length,
-            revenue: bookings.reduce((sum, b) => sum + (b.price || 0), 0)
+            revenue: totalRevenue,
+            completedBookings: completedBookings.length
           })
         }
       } catch (err) {
@@ -90,7 +95,9 @@ export default function AdminDashboard() {
           <Card>
             <div className="text-xs sm:text-sm text-gray-500">Revenue</div>
             <div className="text-2xl sm:text-3xl font-bold mt-2">₹{stats?.revenue ?? 0}</div>
-            <div className="text-xs sm:text-sm text-gray-500 mt-2">Total earnings</div>
+            <div className="text-xs sm:text-sm text-gray-500 mt-2">
+              From {stats?.completedBookings ?? 0} completed/warranty bookings
+            </div>
           </Card>
 
           <Card className="sm:col-span-2 lg:col-span-1">

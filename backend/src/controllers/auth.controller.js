@@ -28,7 +28,8 @@ async function register(req, res) {
       phone: user.phone,
       bio: user.bio,
       avatar: user.avatar,
-      address: user.address
+      address: user.address,
+      createdAt: user.createdAt
     } 
   });
 }
@@ -52,7 +53,8 @@ async function login(req, res) {
       phone: user.phone,
       bio: user.bio,
       avatar: user.avatar,
-      address: user.address
+      address: user.address,
+      createdAt: user.createdAt
     } 
   });
 }
@@ -88,7 +90,8 @@ async function updateProfile(req, res) {
       bio: user.bio,
       avatar: user.avatar,
       address: user.address,
-      companyName: user.companyName
+      companyName: user.companyName,
+      createdAt: user.createdAt
     });
   } catch (err) {
     console.error('Update profile error:', err);
@@ -219,4 +222,32 @@ async function changePassword(req, res) {
   }
 }
 
-module.exports = { register, login, updateProfile, forgotPassword, resetPassword, changePassword };
+// Get Profile - fetch current user data
+async function getProfile(req, res) {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findById(userId).select('-passwordHash');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phone: user.phone,
+      bio: user.bio,
+      avatar: user.avatar,
+      address: user.address,
+      companyName: user.companyName,
+      createdAt: user.createdAt
+    });
+  } catch (err) {
+    console.error('Get profile error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+module.exports = { register, login, getProfile, updateProfile, forgotPassword, resetPassword, changePassword };
+

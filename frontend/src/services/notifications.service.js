@@ -3,17 +3,18 @@
  * Basic notifications API.
  *
  * - GET  /notifications           -> list (unread first)
- * - POST /notifications/mark-read -> mark read single or batch
- * - POST /notifications/send      -> admin or system send custom notification
+ * - PUT  /notifications/:id/read  -> mark single notification as read
+ * - PUT  /notifications/read-all  -> mark all notifications as read
+ * - DELETE /notifications/:id     -> delete notification
  */
 
 import api from './apiClient';
 
 const notificationsService = {
   list: (params = {}) => api.get('/notifications', { params }),
-  markRead: (id) => api.post(`/notifications/${id}/read`),
-  markAllRead: () => api.post('/notifications/read-all'),
-  send: (payload) => api.post('/notifications', payload) // admin/system
+  markRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllRead: () => api.put('/notifications/read-all'),
+  delete: (id) => api.delete(`/notifications/${id}`)
 };
 
 export default notificationsService;

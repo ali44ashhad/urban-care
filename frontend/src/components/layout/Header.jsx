@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
+import NotificationBell from "../notifications/NotificationBell";
 
 export default function Header() {
   const { user, logout } = useAuthContext();
@@ -178,6 +179,9 @@ export default function Header() {
                 )}
               </button>
             )}
+
+            {/* Notification Bell - Show for logged in users */}
+            {user && <NotificationBell />}
 
             {/* Role-based links */}
             {user?.role === "admin" && (

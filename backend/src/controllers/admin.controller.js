@@ -81,7 +81,7 @@ async function getAnalytics(req, res) {
   const revenueData = await Booking.aggregate([
     {
       $match: {
-        status: 'completed',
+        status: { $in: ['completed', 'warranty_claimed'] },
         createdAt: { $gte: startDate }
       }
     },

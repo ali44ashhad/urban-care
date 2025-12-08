@@ -464,11 +464,11 @@ export default function CategoryServices() {
                                     ))}
                                   </div>
                                 </div>
-                                {review.title && (
+                                 {/* {review.title && (
                                   <p className="font-medium text-gray-700 text-sm mb-1">
                                     {review.title}
                                   </p>
-                                )}
+                                )} */}
                                 <p className="text-gray-600 text-sm">
                                   {review.comment}
                                 </p>
