@@ -7,7 +7,7 @@ const Warranty = require('../src/models/warranty.model');
 
 async function fixWarrantyStatuses() {
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/urban-clap');
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://fundzz841_db_user:MVMp8TAv5XMGnN2t@cluster0.jgatydk.mongodb.net/urbanclap?retryWrites=true&w=majority');
     console.log('Connected to database');
 
     // Find all bookings with warranty_requested status
