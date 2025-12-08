@@ -2,10 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import servicesService from '../../services/services.service'
 import ServiceList from '../../components/lists/ServiceList'
 import HeroModern from '../../components/HeroModern'
-import HowItWorks from '../../components/HowItWorks'
-import ServiceModal from '../../components/ServiceModal'
+import HowItWorks from '../../components/HowItWorks' 
 import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import ServiceDetailModal from "../../components/ServiceDetailModal";
 
 export default function ClientHome() {
   const [services, setServices] = useState([])
@@ -79,7 +79,7 @@ export default function ClientHome() {
 
       {/* Booking modal (optional) */}
       {selectedService && (
-        <ServiceModal service={selectedService} onClose={() => setSelectedService(null)} />
+        <ServiceDetailModal service={selectedService} onClose={() => setSelectedService(null)} />
       )}
     </div>
   )
