@@ -97,6 +97,14 @@ export default function CategoryServices() {
       return
     }
 
+    // Prevent admin from adding to cart
+    if (user.role === 'admin') {
+      window.dispatchEvent(new CustomEvent('app:toast', {
+        detail: { message: 'Admin users cannot add services to cart', type: 'info' }
+      }))
+      return
+    }
+
     // Get existing cart
     const existingDraft = JSON.parse(sessionStorage.getItem('bookingDraft') || '{}');
     const cartItems = existingDraft.items || [];
