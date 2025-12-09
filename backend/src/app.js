@@ -42,28 +42,34 @@ const morgan = require('morgan');
 const path = require('path');
 const mongoose = require('mongoose');
 
-const { connectDB } = require('./config/db');   // 🔹 new
-const config = require('./config');            // 🔹 new
+const { connectDB } = require('./config/db');
+const config = require('./config');
 const routes = require('./routes');
 const { errorHandler } = require('./middlewares/error.middleware');
 
 const app = express();
-
-// 🔹 DB connect on app load (production + local both me chalega)
-(async () => {
-  try {
-    await connectDB(config.mongoUri);
-    console.log('MongoDB connected from app.js');
-  } catch (err) {
-    console.error('Failed to connect MongoDB from app.js', err);
-  }
-})();
 
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
+
+// Middleware to ensure DB connection for each request (serverless)
+app.use(async (req, res, next) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await connectDB(config.mongoUri);
+    }
+    next();
+  } catch (err) {
+    console.error('DB connection middleware error:', err);
+    res.status(503).json({ 
+      message: 'Database connection failed', 
+      error: err.message 
+    });
+  }
+});
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
