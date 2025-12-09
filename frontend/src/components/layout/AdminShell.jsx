@@ -29,7 +29,7 @@ export default function AdminShell() {
         </div>
 
       {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-16 left-4 z-40">
+      {/* <div className="lg:hidden fixed top-16 left-4 z-40">
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -43,10 +43,10 @@ export default function AdminShell() {
             )}
           </svg>
         </button>
-      </div>
+      </div> */}
 
       {/* Mobile Sidebar Overlay */}
-      {mobileMenuOpen && (
+      {/* {mobileMenuOpen && (
         <>
           <div
             className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
@@ -56,7 +56,7 @@ export default function AdminShell() {
             <Sidebar menu={adminMenu} onClose={() => setMobileMenuOpen(false)} />
           </div>
         </>
-      )}
+      )} */}
 
       {/* Content */}
       <main className="flex-1 p-4 md:p-6 lg:p-8 w-full min-h-screen">
