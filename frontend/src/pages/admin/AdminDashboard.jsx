@@ -56,7 +56,10 @@ export default function AdminDashboard() {
             totalProviders: providers.length,
             recentBookings: bookings.slice(0, 5).length,
             revenue: totalRevenue,
-            completedBookings: completedBookings.length
+            completedBookings: completedBookings.length,
+            latestServices: services.slice(0, 5),
+            latestBookings: bookings.slice(0, 5),
+            topProviders: providers.slice(0, 5)
           })
         }
       } catch (err) {
@@ -67,7 +70,10 @@ export default function AdminDashboard() {
             totalServices: 0,
             totalProviders: 0,
             recentBookings: 0,
-            revenue: 0
+            revenue: 0,
+            latestServices: [],
+            latestBookings: [],
+            topProviders: []
           })
         }
       } finally {
@@ -110,11 +116,58 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="sm:col-span-2 lg:col-span-3">
-            <h3 className="font-semibold mb-2 text-sm sm:text-base">Overview</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <div className="p-3 bg-white rounded-xl shadow text-sm sm:text-base">Services: {stats?.totalServices ?? 0}</div>
-              <div className="p-3 bg-white rounded-xl shadow text-sm sm:text-base">Recent bookings: {stats?.recentBookings ?? 0}</div>
-              <div className="p-3 bg-white rounded-xl shadow text-sm sm:text-base">Active providers: {stats?.totalProviders ?? 0}</div>
+            <h3 className="font-semibold mb-4 text-sm sm:text-base">Overview</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Services Column */}
+              <div className="flex flex-col">
+                <h4 className="font-semibold text-sm mb-3 text-gray-700">Services: {stats?.totalServices ?? 0}</h4>
+                <div className="space-y-2 flex-1">
+                  {stats?.latestServices && stats.latestServices.length > 0 ? (
+                    stats.latestServices.map((service, idx) => (
+                      <div key={service._id || idx} className="p-2 bg-blue-50 rounded-lg text-xs sm:text-sm border border-blue-100">
+                        <div className="font-medium text-gray-800">{service.title || 'N/A'}</div>
+                        <div className="text-gray-600">₹{service.basePrice || 0}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-2 text-gray-500 text-xs">No services available</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Bookings Column */}
+              <div className="flex flex-col">
+                <h4 className="font-semibold text-sm mb-3 text-gray-700">Recent Bookings: {stats?.recentBookings ?? 0}</h4>
+                <div className="space-y-2 flex-1">
+                  {stats?.latestBookings && stats.latestBookings.length > 0 ? (
+                    stats.latestBookings.map((booking, idx) => (
+                      <div key={booking._id || idx} className="p-2 bg-green-50 rounded-lg text-xs sm:text-sm border border-green-100">
+                        <div className="font-medium text-gray-800">{booking.serviceId?.title || 'N/A'}</div>
+                        <div className="text-gray-600">₹{booking.price || 0} • {booking.status || 'pending'}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-2 text-gray-500 text-xs">No bookings available</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Active Providers Column */}
+              <div className="flex flex-col">
+                <h4 className="font-semibold text-sm mb-3 text-gray-700">Active Providers: {stats?.totalProviders ?? 0}</h4>
+                <div className="space-y-2 flex-1">
+                  {stats?.topProviders && stats.topProviders.length > 0 ? (
+                    stats.topProviders.map((provider, idx) => (
+                      <div key={provider._id || idx} className="p-2 bg-purple-50 rounded-lg text-xs sm:text-sm border border-purple-100">
+                        <div className="font-medium text-gray-800">{provider.name || 'N/A'}</div>
+                        <div className="text-gray-600">{provider.email || 'N/A'}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-2 text-gray-500 text-xs">No providers available</div>
+                  )}
+                </div>
+              </div>
             </div>
           </Card>
         </div>
