@@ -35,6 +35,17 @@ export default function BookingDetail() {
       setLoading(false)
     }
   }
+function formatDate(dateString) {
+  if (!dateString) return 'N/A';
+
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
 
   async function handleAccept() {
     if (!confirm('Accept this booking?')) return
@@ -230,14 +241,14 @@ export default function BookingDetail() {
               </svg>
               <span className="font-medium">{client.name || 'N/A'}</span>
             </div>
-            {client.email && (
+            {/* {client.email && (
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <span>{client.email}</span>
               </div>
-            )}
+            )} */}
             {client.phone && (
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,7 +268,10 @@ export default function BookingDetail() {
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span className="font-medium">{booking.slot?.date || 'N/A'}</span>
+             <span className="font-medium">
+  {formatDate(booking.slot?.date)}
+</span>
+
             </div>
             <div className="flex items-center gap-3">
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,7 +299,7 @@ export default function BookingDetail() {
         </Card>
 
         {/* Actions */}
-        <Card>
+        {/* <Card>
           <h2 className="text-xl font-semibold mb-4">Actions</h2>
           <div className="flex flex-wrap gap-3">
             {canAccept && (
@@ -337,10 +351,10 @@ export default function BookingDetail() {
               <p className="text-gray-500">No actions available for this booking status</p>
             )}
           </div>
-        </Card>
+        </Card> */}
 
         {/* Warranty Upload */}
-        {canUploadWarranty && (
+        {/* {canUploadWarranty && (
           <Card>
             <h2 className="text-xl font-semibold mb-4">Upload Warranty Slip</h2>
             <div className="space-y-3">
@@ -357,7 +371,7 @@ export default function BookingDetail() {
               )}
             </div>
           </Card>
-        )}
+        )} */}
 
         {/* Warranty Info */}
         {booking.warrantySlipUrl && (

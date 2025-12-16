@@ -310,7 +310,7 @@ export default function CategoryMgmt() {
                 <span className={`px-2 py-1 rounded ${category.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                   {category.isActive ? 'Active' : 'Inactive'}
                 </span>
-                <span className="text-gray-500">Order: {category.order}</span>
+                {/* <span className="text-gray-500">Order: {category.order}</span> */}
               </div>
             </div>
           ))}
