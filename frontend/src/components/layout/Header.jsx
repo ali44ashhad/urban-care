@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
 import NotificationBell from "../notifications/NotificationBell";
-
+import logo from "../../assets/logo.png";
 export default function Header() {
   const { user, logout } = useAuthContext();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if we're in a panel route (admin, provider, or client panel)
+  const isPanelRoute = location.pathname.startsWith('/admin') || 
+                       location.pathname.startsWith('/provider') || 
+                       location.pathname.startsWith('/client');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -117,16 +123,21 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="mx-auto px-4 py-3 md:py-4">
+      <div className={`mx-auto ${isPanelRoute ? '' : 'max-w-7xl'} px-4 md:px-8 py-3 md:py-4`}>
         <div className="flex items-center justify-between">
           {/* Brand */}
           <Link
-            to="/"
-            className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            UrbanCare
-          </Link>
+  to="/"
+  onClick={() => setMobileMenuOpen(false)}
+  className="flex items-center"
+>
+  <img
+    src={logo}
+    alt="Logo"
+    className="h-8 md:h-10 w-auto"
+  />
+</Link>
+
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-4 lg:gap-6 text-gray-700">

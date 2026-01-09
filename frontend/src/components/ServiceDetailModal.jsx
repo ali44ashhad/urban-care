@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Button from './ui/Button'
 import RatingStars from './ui/RatingStars'
 import reviewsService from '../services/reviews.service'
+import categoriesService from '../services/categories.service'
 import LoadingSpinner from './ui/LoadingSpinner'
 import { useAuthContext } from '../context/AuthContext'
 
@@ -12,10 +13,28 @@ export default function ServiceDetailModal({ service, onClose, onAddToCart }) {
   const [selectedVariant, setSelectedVariant] = useState(service?.pricingOptions?.[0] || null)
   const [reviews, setReviews] = useState([])
   const [loadingReviews, setLoadingReviews] = useState(false)
+  const [categorySlug, setCategorySlug] = useState(null)
 
   useEffect(() => {
     loadReviews()
+    loadCategorySlug()
   }, [service])
+
+  async function loadCategorySlug() {
+    if (!service?.category) return
+    try {
+      const res = await categoriesService.list()
+      const categories = res.data?.items || res.data || []
+      const matchedCategory = categories.find(cat => 
+        cat.name === service.category || cat.name?.toLowerCase() === service.category?.toLowerCase()
+      )
+      if (matchedCategory) {
+        setCategorySlug(matchedCategory.slug)
+      }
+    } catch (err) {
+      console.warn('Failed to load category slug:', err)
+    }
+  }
 
   async function loadReviews() {
     if (!service?._id && !service?.id) return
@@ -107,6 +126,31 @@ export default function ServiceDetailModal({ service, onClose, onAddToCart }) {
                 alt={service.title}
                 className="w-full h-64 object-cover"
               />
+            </div>
+          )}
+
+          {/* Category */}
+          {service.category && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Category</h3>
+              {categorySlug ? (
+                <button
+                  onClick={() => {
+                    onClose()
+                    navigate(`/services/${categorySlug}`)
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors group"
+                >
+                  <span className="font-semibold">{service.category}</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              ) : (
+                <span className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold">
+                  {service.category}
+                </span>
+              )}
             </div>
           )}
 

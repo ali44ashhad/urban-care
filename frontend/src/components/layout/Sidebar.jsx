@@ -100,13 +100,13 @@ export default function Sidebar({ menu = [], onClose }) {
 
   // helper: dashboard (root) route exact match only
   const isRootDashboard = (path) =>
-    path === "/admin" || path === "/provider";
+    path === "/admin" || path === "/provider" || path === "/client";
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r shadow-sm p-4 flex flex-col">
+    <aside className="w-64 min-h-screen bg-white border-r shadow-sm p-4 flex flex-col max-h-full">
       
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-800">Dashboard</h2>
@@ -140,8 +140,8 @@ export default function Sidebar({ menu = [], onClose }) {
       </div>
 
       {/* Menu */}
-      <nav className="space-y-2 flex-1">
-        {menu.length > 0 ? (
+      <nav className="space-y-2 flex-1 overflow-y-auto min-h-0">
+        {menu && menu.length > 0 ? (
           menu.map((item) => (
             <NavLink
               key={item.path}
@@ -165,7 +165,7 @@ export default function Sidebar({ menu = [], onClose }) {
       </nav>
 
       {/* Footer */}
-      <div className="mt-auto pt-4 border-t space-y-2">
+      <div className="mt-auto pt-4 border-t space-y-2 flex-shrink-0">
         
         {/* Profile (not for admin) */}
         {user?.role !== "admin" && (

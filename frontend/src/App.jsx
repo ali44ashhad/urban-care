@@ -6,6 +6,7 @@ import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import AdminShell from './components/layout/AdminShell'
 import ProviderShell from './components/layout/ProviderShell'
+import ClientShell from './components/layout/ClientShell'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import NotFound from './pages/errors/NotFound'
 import ServerError from './pages/errors/ServerError'
@@ -16,6 +17,14 @@ import ScrollToTop from './components/layout/ScrollToTop.jsx'
 const Landing = lazy(() => import('./pages/public/Landing'))
 const About = lazy(() => import('./pages/public/About'))
 const Contact = lazy(() => import('./pages/public/Contact'))
+const Services = lazy(() => import('./pages/public/Services'))
+const Privacy = lazy(() => import('./pages/public/Privacy'))
+const Terms = lazy(() => import('./pages/public/Terms'))
+const Refund = lazy(() => import('./pages/public/Refund'))
+const Cancellation = lazy(() => import('./pages/public/Cancellation'))
+const HelpCenter = lazy(() => import('./pages/public/HelpCenter')) 
+const HowItWorks = lazy(() => import('./pages/public/HowItWorks'))
+const FAQ = lazy(() => import('./pages/public/FAQ'))
 
 const Login = lazy(() => import('./pages/auth/Login'))
 const Register = lazy(() => import('./pages/auth/Register'))
@@ -23,7 +32,6 @@ const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'))
 
 // Client pages
-const ClientHome = lazy(() => import('./pages/client/ClientHome'))
 const Cart = lazy(() => import('./pages/client/Cart'))
 const ServiceDetail = lazy(() => import('./pages/client/ServiceDetail'))
 const PickService = lazy(() => import('./pages/client/BookingFlow/PickService'))
@@ -95,6 +103,15 @@ function AdminRoute({ children }) {
   return children ?? <Outlet />
 }
 
+// Protect route for clients/users
+function ClientRoute({ children }) {
+  const { user, loading } = useAuthContext()
+  if (loading) return <LoadingSpinner />
+  if (!user) return <Navigate to="/auth/login" replace />
+  if (user.role !== 'client') return <Navigate to="/" replace />
+  return children ?? <Outlet />
+}
+
 export default function App() {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>}>
@@ -105,7 +122,19 @@ export default function App() {
           <Route index element={<Landing />} />
           <Route path="about" element={<About />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="services" element={<Services />} />
           <Route path="services/:category" element={<CategoryServices />} />
+          
+          {/* Legal pages */}
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="terms" element={<Terms />} />
+          <Route path="refund" element={<Refund />} />
+          <Route path="cancellation" element={<Cancellation />} />
+          
+          {/* Support pages */}
+          <Route path="help-center" element={<HelpCenter />} /> 
+          <Route path="how-it-works" element={<HowItWorks />} />
+          <Route path="faq" element={<FAQ />} />
 
           {/* Auth */}
           <Route path="auth">
@@ -121,7 +150,6 @@ export default function App() {
           {/* Booking flow is private — require login */}
           <Route element={<PrivateRoute />}>
             <Route path="client">
-              <Route index element={<ClientHome />} />
               <Route path="cart" element={<Cart />} />
               <Route path="booking">
                 <Route path="pick" element={<PickService />} />
@@ -129,14 +157,21 @@ export default function App() {
                 <Route path="address" element={<AddressForm />} />
                 <Route path="confirmation" element={<Confirmation />} />
               </Route>
-
-              <Route path="bookings" element={<MyBookings />} />
-              <Route path="bookings/:id" element={<BookingDetail />} />
-              <Route path="warranty" element={<WarrantyRequests />} />
-              <Route path="reviews" element={<Reviews />} />
-              <Route path="profile" element={<ClientProfile />} />
             </Route>
           </Route>
+        </Route>
+
+        {/* Client routes — using ClientShell for client layout */}
+        <Route path="/client" element={
+          <ClientRoute>
+            <ClientShell />
+          </ClientRoute>
+        }>
+          <Route path="bookings" element={<MyBookings />} />
+          <Route path="bookings/:id" element={<BookingDetail />} />
+          <Route path="warranty" element={<WarrantyRequests />} />
+          <Route path="reviews" element={<Reviews />} />
+          <Route path="profile" element={<ClientProfile />} />
         </Route>
 
         {/* Provider routes — can have a provider shell or sidebar */}

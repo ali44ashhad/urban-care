@@ -162,8 +162,9 @@ export default function WarrantyMgmt() {
                   <h3 className="text-lg font-bold text-gray-900 mb-2">
                     {service?.title || 'Service'}
                   </h3>
-                  <div className="text-sm text-gray-500 mb-3">
-                    Claim #{(warranty._id || '').slice(-6)}
+                  <div className="text-sm text-gray-500 mb-3 space-y-1">
+                    <div>Booking #{(warranty.bookingId?._id || warranty.bookingId?.id || '').toString().slice(-8)}</div>
+                    <div>Claim #{(warranty._id || warranty.id || '').toString().slice(-6)}</div>
                   </div>
                   <div className="text-sm space-y-2">
                     <div>

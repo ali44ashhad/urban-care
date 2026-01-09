@@ -24,6 +24,7 @@ export default function Button({
       'bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 active:scale-95',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-50 active:scale-95',
     danger: 'bg-red-600 text-white hover:bg-red-700 active:scale-95',
+    third: 'bg-white/5 backdrop-blur-sm border-2 border-white/10 hover:border-white/20 px-8 py-4 text-lg rounded-2xl',
   }
 
   const sizes = {

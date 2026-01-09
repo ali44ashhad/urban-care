@@ -105,12 +105,22 @@ function formatDate(dateString) {
       const serviceName = b.service?.title || b.serviceId?.title || ''
       const clientName = b.client?.name || b.clientId?.name || ''
       const providerName = b.provider?.name || b.providerId?.name || ''
+      const bookingId = (b._id || b.id || '').toString().toLowerCase()
+      const bookingIdShort6 = bookingId.slice(-6) // Last 6 characters like "23e61b"
+      const bookingIdShort8 = bookingId.slice(-8) // Last 8 characters like user booking pages
       
       return (
         serviceName.toLowerCase().includes(searchLower) ||
         clientName.toLowerCase().includes(searchLower) ||
         providerName.toLowerCase().includes(searchLower) ||
-        (b._id || b.id || '').includes(search)
+        bookingId.includes(searchLower) ||
+        bookingIdShort6.includes(searchLower) ||
+        bookingIdShort8.includes(searchLower) ||
+        `claim #${bookingIdShort6}`.includes(searchLower) ||
+        `booking #${bookingIdShort6}`.includes(searchLower) ||
+        `booking #${bookingIdShort8}`.includes(searchLower) ||
+        `#${bookingIdShort6}`.includes(searchLower) ||
+        `#${bookingIdShort8}`.includes(searchLower)
       )
     }
     
@@ -271,6 +281,9 @@ function formatDate(dateString) {
                   <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">
                     {b.service?.title || b.serviceId?.title || 'Service'}
                   </h3>
+                  <div className="text-xs text-gray-500 mb-2 font-mono">
+                    Booking #{(b._id || b.id || '').toString().slice(-8)}
+                  </div>
                   <div className="text-sm space-y-1">
                     <div className="flex items-center gap-2 text-gray-600">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
