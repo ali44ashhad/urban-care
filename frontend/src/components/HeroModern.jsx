@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import categoriesService from '../services/categories.service'
+import { createSlug } from '../utils/formatters'
 
 export default function HeroModern({ onSearch, onBook }) {
   const navigate = useNavigate()
@@ -234,7 +235,7 @@ export default function HeroModern({ onSearch, onBook }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.5 + idx * 0.05 }}
                 whileHover={{ y: -4 }}
-                onClick={() => navigate(`/services/${category.slug}`)}
+                onClick={() => navigate(`/services/${createSlug(category.slug)}`)}
                 className="group bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 hover:border-white/20 rounded-2xl p-6 transition-all"
               >
                 <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">

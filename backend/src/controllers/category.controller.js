@@ -65,7 +65,14 @@ async function createCategory(req, res) {
     }
     
     // Auto-generate slug if not provided
-    const categorySlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    // Handle spaces, ampersands, and all special characters properly
+    const categorySlug = slug || name
+      .toLowerCase()
+      .trim()
+      .replace(/[&\s]+/g, '-')  // Replace spaces and ampersands with hyphens
+      .replace(/[^a-z0-9-]+/g, '-')  // Replace other special chars with hyphens
+      .replace(/-+/g, '-')  // Replace multiple hyphens with single hyphen
+      .replace(/^-+|-+$/g, '');  // Remove leading/trailing hyphens
     
     // Check if category with same name or slug already exists
     const existing = await Category.findOne({
@@ -120,8 +127,29 @@ async function updateCategory(req, res) {
       }
     }
     
-    if (name !== undefined) category.name = name;
-    if (slug !== undefined) category.slug = slug;
+    if (name !== undefined) {
+      category.name = name;
+      // Auto-update slug if name changed and slug wasn't explicitly provided
+      if (!slug) {
+        category.slug = name
+          .toLowerCase()
+          .trim()
+          .replace(/[&\s]+/g, '-')
+          .replace(/[^a-z0-9-]+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      }
+    }
+    if (slug !== undefined) {
+      // Sanitize the slug even if provided manually
+      category.slug = slug
+        .toLowerCase()
+        .trim()
+        .replace(/[&\s]+/g, '-')
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
     if (icon !== undefined) category.icon = icon;
     if (description !== undefined) category.description = description;
     if (color !== undefined) category.color = color;

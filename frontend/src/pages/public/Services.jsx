@@ -5,6 +5,7 @@ import ServiceList from '../../components/lists/ServiceList'
 import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { useAuthContext } from '../../context/AuthContext'
+import { createSlug } from '../../utils/formatters'
 
 export default function Services() {
   const [services, setServices] = useState([])
@@ -66,18 +67,19 @@ export default function Services() {
       )
       
       if (matchedCategory?.slug) {
-        // Navigate to the category page
-        navigate(`/services/${matchedCategory.slug}`)
+        // Navigate to the category page with sanitized slug
+        const sanitizedSlug = createSlug(matchedCategory.slug)
+        navigate(`/services/${sanitizedSlug}`)
       } else {
         console.warn('Category slug not found for:', service.category)
         // Fallback: try to create a slug from category name
-        const slug = service.category.toLowerCase().replace(/\s+/g, '-')
+        const slug = createSlug(service.category)
         navigate(`/services/${slug}`)
       }
     } catch (err) {
       console.error('Failed to load category:', err)
       // Fallback: try to create a slug from category name
-      const slug = service.category.toLowerCase().replace(/\s+/g, '-')
+      const slug = createSlug(service.category)
       navigate(`/services/${slug}`)
     }
   }, [navigate])

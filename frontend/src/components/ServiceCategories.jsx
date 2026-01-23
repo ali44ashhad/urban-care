@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import categoriesService from '../services/categories.service'
+import { createSlug } from '../utils/formatters'
 // import LoadingSpinner from './ui/LoadingSpinner'
 
 export default function ServiceCategories() {
@@ -49,7 +50,7 @@ export default function ServiceCategories() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: idx * 0.08 }}
-              onClick={() => navigate(`/services/${category.slug}`)}
+              onClick={() => navigate(`/services/${createSlug(category.slug)}`)}
               className="group cursor-pointer"
             >
               <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1">

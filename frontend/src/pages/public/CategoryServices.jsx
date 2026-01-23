@@ -7,9 +7,10 @@ import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuthContext } from '../../context/AuthContext';
+import { normalizeSlug, createSlug } from '../../utils/formatters';
 
 export default function CategoryServices() {
-  const { category } = useParams();
+  const { category: categoryParam } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const [services, setServices] = useState([]);
@@ -20,6 +21,17 @@ export default function CategoryServices() {
   const [allCategories, setAllCategories] = useState([]);
   const [serviceReviews, setServiceReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  // Normalize the category slug from URL
+  const category = normalizeSlug(categoryParam || '');
+
+  // Redirect to clean URL if the normalized slug differs from the original parameter
+  useEffect(() => {
+    if (categoryParam && category && category !== categoryParam) {
+      // Only redirect if the normalized slug is different (handles URL-encoded slugs)
+      navigate(`/services/${category}`, { replace: true });
+    }
+  }, [categoryParam, category, navigate]);
 
   useEffect(() => {
     loadCategoryAndServices();
@@ -39,7 +51,16 @@ export default function CategoryServices() {
       const categories = categoriesRes.data.items || categoriesRes.data || [];
       setAllCategories(categories);
       
-      const matchedCategory = categories.find(cat => cat.slug === category);
+      // Try to find category by exact slug match first, then by normalized slug
+      let matchedCategory = categories.find(cat => cat.slug === category);
+      
+      // If not found, try matching with normalized slugs (handles old slugs with spaces/special chars)
+      if (!matchedCategory) {
+        matchedCategory = categories.find(cat => {
+          const normalizedDbSlug = normalizeSlug(cat.slug);
+          return normalizedDbSlug === category;
+        });
+      }
       
       if (matchedCategory) {
         setCategoryName(matchedCategory.name);
@@ -224,7 +245,7 @@ export default function CategoryServices() {
                     .map(cat => (
                       <button
                         key={cat._id}
-                        onClick={() => navigate(`/services/${cat.slug}`)}
+                        onClick={() => navigate(`/services/${createSlug(cat.slug)}`)}
                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-blue-600 transition-colors text-sm flex items-center justify-between group"
                       >
                         <span>{cat.name}</span>

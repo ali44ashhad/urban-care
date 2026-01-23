@@ -6,6 +6,7 @@ import reviewsService from '../services/reviews.service'
 import categoriesService from '../services/categories.service'
 import LoadingSpinner from './ui/LoadingSpinner'
 import { useAuthContext } from '../context/AuthContext'
+import { createSlug } from '../utils/formatters'
 
 export default function ServiceDetailModal({ service, onClose, onAddToCart }) {
   const navigate = useNavigate()
@@ -137,7 +138,7 @@ export default function ServiceDetailModal({ service, onClose, onAddToCart }) {
                 <button
                   onClick={() => {
                     onClose()
-                    navigate(`/services/${categorySlug}`)
+                    navigate(`/services/${createSlug(categorySlug)}`)
                   }}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors group"
                 >
