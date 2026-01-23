@@ -90,9 +90,11 @@
 
 import React, { useState } from 'react'
 import { useAuthContext } from '../../context/AuthContext'
+import authService from '../../services/auth.service'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
+import OTPVerification from './OTPVerification'
 
 /**
  * AuthForm
@@ -114,12 +116,15 @@ export default function AuthForm({
     name: '',
     email: '',
     password: '',
+    phone: '',
     role: defaultRole
   })
 
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [showOTP, setShowOTP] = useState(false)
+  const [otpData, setOtpData] = useState(null) // { userId, phone }
 
   function setField(key, value) {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -131,6 +136,10 @@ export default function AuthForm({
       return 'Password must be at least 6 characters'
     if (mode === 'register' && !form.name)
       return 'Name is required for registration'
+    if (mode === 'register' && !form.phone)
+      return 'Phone number is required for registration'
+    if (mode === 'register' && form.phone && form.phone.length < 10)
+      return 'Please enter a valid phone number'
     return null
   }
 
@@ -147,26 +156,100 @@ export default function AuthForm({
     setLoading(true)
 
     try {
-      let user
+      let response
 
       if (mode === 'login') {
-        user = await contextLogin(form.email, form.password)
+        response = await contextLogin(form.email, form.password)
       } else {
-        user = await contextRegister({
+        response = await contextRegister({
           name: form.name,
           email: form.email,
           password: form.password,
+          phone: form.phone,
           role: form.role
         })
       }
 
-      onSuccess(user)
+      // Check if 2FA verification is required
+      if (response?.requiresVerification) {
+        setOtpData({
+          userId: response.userId || response.id,
+          phone: response.phone
+        })
+        setShowOTP(true)
+      } else {
+        // Direct success (shouldn't happen with 2FA, but handle it)
+        onSuccess(response.user || response)
+      }
     } catch (err) {
       console.error('Auth error:', err)
       setError(err.message || err.response?.data?.message || 'Server error')
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleVerifyOTP(code) {
+    setLoading(true)
+    try {
+      let user
+      if (mode === 'login') {
+        user = await contextLogin(form.email, form.password, otpData, code)
+      } else {
+        user = await contextRegister({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          phone: form.phone,
+          role: form.role
+        }, otpData, code)
+      }
+      setShowOTP(false)
+      onSuccess(user)
+    } catch (err) {
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleResendOTP() {
+    try {
+      if (mode === 'login') {
+        await contextLogin(form.email, form.password, otpData, null, true)
+      } else {
+        // For registration, resend OTP
+        await authService.resendOTP({ phone: otpData.phone })
+      }
+    } catch (err) {
+      throw err
+    }
+  }
+
+  // Show OTP verification if needed
+  if (showOTP && otpData) {
+    return (
+      <div>
+        <OTPVerification
+          phone={otpData.phone}
+          onVerify={handleVerifyOTP}
+          onResend={handleResendOTP}
+          loading={loading}
+        />
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={() => {
+              setShowOTP(false)
+              setOtpData(null)
+            }}
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
+            ← Back to {mode === 'login' ? 'login' : 'registration'}
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -197,6 +280,16 @@ export default function AuthForm({
         type="email"
       />
 
+      {mode === 'register' && (
+        <Input
+          label="Phone Number"
+          value={form.phone}
+          onChange={e => setField('phone', e.target.value)}
+          placeholder="9876543210"
+          type="tel"
+        />
+      )}
+
       {/* 🔐 Password with Eye Toggle */}
       <Input
         label="Password"
@@ -220,7 +313,24 @@ export default function AuthForm({
         />
       )}
 
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      {error && (
+        <div className="text-sm text-red-600 space-y-1">
+          <div>{error}</div>
+          {error.includes('not verified') && (
+            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+              <p className="font-semibold mb-1">Need to verify your phone number?</p>
+              <a 
+                href="https://console.twilio.com/us1/develop/phone-numbers/manage/verified" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                Click here to verify your phone number in Twilio →
+              </a>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
         <Button

@@ -79,7 +79,7 @@ export default function About() {
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-3xl leading-relaxed">
-              RAWW is Bangalore's hyper-local home service platform, currently serving <span className="font-semibold text-white">Akshay Nagar and JP Nagar</span>. 
+              Stunn is Bangalore's hyper-local home service platform, currently serving <span className="font-semibold text-white">Akshay Nagar and JP Nagar</span>. 
               We connect you with verified, background-checked professionals who understand your neighborhood's specific needs.
             </p>
  
@@ -248,7 +248,7 @@ export default function About() {
           <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-200">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-3">Our Service Promise to Bangalore</h2>
-              <p className="text-gray-600">What you can expect from RAWW</p>
+              <p className="text-gray-600">What you can expect from Stunn</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

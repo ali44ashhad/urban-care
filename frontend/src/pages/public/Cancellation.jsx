@@ -62,7 +62,7 @@ export default function Cancellation() {
                 <p className="mb-2">You can cancel your booking through:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Your account dashboard under "My Bookings"</li>
-                  <li>Email to support@raww.com with your booking reference number</li>
+                  <li>Email to support@stunn.com with your booking reference number</li>
                   <li>Phone support (available during business hours)</li>
                 </ul>
               </section>
@@ -80,8 +80,8 @@ export default function Cancellation() {
                 <h2 className="text-2xl font-semibold mb-3">8. Contact Us</h2>
                 <p>
                   For questions about cancellations or to request special consideration, please contact us at{' '}
-                  <a href="mailto:support@raww.com" className="text-blue-600 hover:underline">
-                    support@raww.com
+                  <a href="mailto:support@stunn.com" className="text-blue-600 hover:underline">
+                    support@stunn.com
                   </a>
                 </p>
               </section>

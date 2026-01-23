@@ -14,7 +14,7 @@ export default function Terms() {
               <section>
                 <h2 className="text-2xl font-semibold mb-3">1. Acceptance of Terms</h2>
                 <p>
-                  By accessing and using RAWW Platform, you accept and agree to be bound by the 
+                  By accessing and using Stunn Platform, you accept and agree to be bound by the 
                   terms and provision of this agreement. If you do not agree to these Terms of Service, 
                   please do not use our platform.
                 </p>
@@ -36,7 +36,7 @@ export default function Terms() {
                 <h2 className="text-2xl font-semibold mb-3">3. Service Bookings</h2>
                 <p>
                   When you book a service through our platform, you enter into a contract with the 
-                  service provider. RAWW acts as an intermediary platform connecting customers 
+                  service provider. Stunn acts as an intermediary platform connecting customers 
                   with service providers. We are not responsible for the quality, safety, or legality 
                   of services provided by third-party service providers.
                 </p>
@@ -72,7 +72,7 @@ export default function Terms() {
               <section>
                 <h2 className="text-2xl font-semibold mb-3">7. Limitation of Liability</h2>
                 <p>
-                  RAWW Platform shall not be liable for any indirect, incidental, special, 
+                  Stunn Platform shall not be liable for any indirect, incidental, special, 
                   consequential, or punitive damages resulting from your use of or inability to 
                   use the platform or services.
                 </p>
@@ -90,8 +90,8 @@ export default function Terms() {
                 <h2 className="text-2xl font-semibold mb-3">9. Contact Information</h2>
                 <p>
                   If you have questions about these Terms of Service, please contact us at{' '}
-                  <a href="mailto:legal@raww.com" className="text-blue-600 hover:underline">
-                    legal@raww.com
+                  <a href="mailto:legal@stunn.com" className="text-blue-600 hover:underline">
+                    legal@stunn.com
                   </a>
                 </p>
               </section>

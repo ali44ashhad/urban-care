@@ -101,7 +101,7 @@ export default function HowItWorks() {
 
         <Card>
           <div className="p-8">
-            <h2 className="text-2xl font-bold mb-6">Why Choose RAWW?</h2>
+            <h2 className="text-2xl font-bold mb-6">Why Choose Stunn?</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">

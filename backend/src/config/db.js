@@ -16,12 +16,16 @@ async function connectDB(uri) {
   try {
     // Connect with optimized settings for serverless
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 30000, // Increased to 30 seconds for DNS resolution
       socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000, // Connection timeout
       maxPoolSize: 10,
       minPoolSize: 2,
       // Disable buffering for immediate errors
       bufferCommands: false,
+      // Retry connection on failure
+      retryWrites: true,
+      retryReads: true,
     });
     
     cachedConnection = mongoose.connection;

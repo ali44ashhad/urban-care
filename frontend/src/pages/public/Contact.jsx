@@ -45,7 +45,7 @@ export default function Contact() {
         </svg>
       ),
       title: 'Email',
-      details: ['support@raww.com', 'bookings@raww.com'],
+      details: ['support@stunn.com', 'bookings@stunn.com'],
       color: 'from-blue-500 to-cyan-500'
     },
     {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import logo from "../../assets/logowhite.png";
+import logo from "../../assets/logo.png";
 
 export default function Footer() {
   return (
@@ -12,7 +12,7 @@ export default function Footer() {
             <Link to="/" className="flex items-center">
               <img
                 src={logo}
-                alt="RAWW Logo"
+                alt="Stunn Logo"
                 className="h-8 md:h-10 w-auto"
               />
             </Link>
@@ -129,12 +129,21 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  to="/warranty"
+                  className="text-gray-400 hover:text-white transition text-sm"
+                >
+                 Warranty
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/faq"
                   className="text-gray-400 hover:text-white transition text-sm"
                 >
                   FAQ
                 </Link>
               </li>
+             
             </ul>
           </div>
 
@@ -182,7 +191,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} RAWW Platform. All Rights Reserved.
+              © {new Date().getFullYear()} Stunn Platform. All Rights Reserved.
             </p>
             <div className="flex space-x-6 text-sm text-gray-400">
               <span>Design and Developed by <a href="https://www.fnamarketingsolutions.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition">Fna Marketing Solutions</a> for your home care needs</span>

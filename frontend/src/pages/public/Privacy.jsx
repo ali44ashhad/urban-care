@@ -14,7 +14,7 @@ export default function Privacy() {
               <section>
                 <h2 className="text-2xl font-semibold mb-3">1. Introduction</h2>
                 <p>
-                  RAWW Platform ("we," "our," or "us") is committed to protecting your privacy. 
+                  Stunn Platform ("we," "our," or "us") is committed to protecting your privacy. 
                   This Privacy Policy explains how we collect, use, disclose, and safeguard your information 
                   when you use our platform to book home services.
                 </p>
@@ -79,8 +79,8 @@ export default function Privacy() {
                 <h2 className="text-2xl font-semibold mb-3">7. Contact Us</h2>
                 <p>
                   If you have questions about this Privacy Policy, please contact us at{' '}
-                  <a href="mailto:privacy@raww.com" className="text-blue-600 hover:underline">
-                    privacy@raww.com
+                  <a href="mailto:privacy@stunn.com" className="text-blue-600 hover:underline">
+                    privacy@stunn.com
                   </a>
                 </p>
               </section>

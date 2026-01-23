@@ -3,60 +3,187 @@ const crypto = require('crypto');
 const User = require('../models/user.model');
 const { signToken } = require('../utils/jwt.util');
 const { sendEmail } = require('../utils/email.util');
+const { sendOTP, verifyOTP, formatPhoneNumber } = require('../utils/twilio.util');
 
-// Register (client or provider or admin)
+// Register (client or provider or admin) - Step 1: Create user and send OTP
 async function register(req, res) {
   const { name, email, password, role, phone, profile } = req.body;
-  if (!name || !email || !password || !role) {
-    return res.status(400).json({ message: 'Missing required fields' });
+  if (!name || !email || !password || !role || !phone) {
+    return res.status(400).json({ message: 'Missing required fields (name, email, password, role, phone)' });
   }
   const existing = await User.findOne({ email });
   if (existing) return res.status(409).json({ message: 'Email already exists' });
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = new User({ name, email, passwordHash, role, phone, profile });
-  await user.save();
+  try {
+    // Format phone number
+    const formattedPhone = formatPhoneNumber(phone);
+    
+    // Create user (but don't activate yet - will be activated after OTP verification)
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({ name, email, passwordHash, role, phone: formattedPhone, profile, isActive: false });
+    await user.save();
 
-  const token = signToken(user);
-  res.status(201).json({ 
-    token, 
-    user: { 
-      id: user._id, 
-      name: user.name, 
-      email: user.email, 
-      role: user.role,
-      phone: user.phone,
-      bio: user.bio,
-      avatar: user.avatar,
-      address: user.address,
-      createdAt: user.createdAt
-    } 
-  });
+    // Send OTP to phone
+    await sendOTP(formattedPhone);
+
+    res.status(201).json({ 
+      message: 'OTP sent to your phone number',
+      userId: user._id,
+      phone: formattedPhone,
+      requiresVerification: true
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ message: error.message || 'Registration failed' });
+  }
 }
 
-// Login
+// Verify OTP and complete registration
+async function verifyRegistration(req, res) {
+  const { userId, phone, code } = req.body;
+  if (!userId || !phone || !code) {
+    return res.status(400).json({ message: 'User ID, phone, and OTP code are required' });
+  }
+
+  try {
+    const formattedPhone = formatPhoneNumber(phone);
+    
+    // Verify OTP
+    const verification = await verifyOTP(formattedPhone, code);
+    if (!verification.valid) {
+      return res.status(400).json({ message: 'Invalid or expired OTP code' });
+    }
+
+    // Activate user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.isActive = true;
+    await user.save();
+
+    // Generate token
+    const token = signToken(user);
+    res.status(201).json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        phone: user.phone,
+        bio: user.bio,
+        avatar: user.avatar,
+        address: user.address,
+        createdAt: user.createdAt
+      } 
+    });
+  } catch (error) {
+    console.error('Verify registration error:', error);
+    res.status(500).json({ message: error.message || 'Verification failed' });
+  }
+}
+
+// Login - Step 1: Verify credentials and send OTP
 async function login(req, res) {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+  
+  if (!user.isActive) {
+    return res.status(403).json({ message: 'Account not verified. Please verify your phone number.' });
+  }
+
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
-  const token = signToken(user);
-  res.json({ 
-    token, 
-    user: { 
-      id: user._id, 
-      name: user.name, 
-      email: user.email, 
-      role: user.role,
+  if (!user.phone) {
+    return res.status(400).json({ message: 'Phone number not found. Please update your profile.' });
+  }
+
+  try {
+    // Send OTP to user's phone
+    await sendOTP(user.phone);
+
+    res.json({ 
+      message: 'OTP sent to your phone number',
+      userId: user._id,
       phone: user.phone,
-      bio: user.bio,
-      avatar: user.avatar,
-      address: user.address,
-      createdAt: user.createdAt
-    } 
-  });
+      requiresVerification: true
+    });
+  } catch (error) {
+    console.error('Login send OTP error:', error);
+    res.status(500).json({ message: error.message || 'Failed to send OTP' });
+  }
+}
+
+// Verify OTP and complete login
+async function verifyLogin(req, res) {
+  const { userId, phone, code } = req.body;
+  if (!userId || !phone || !code) {
+    return res.status(400).json({ message: 'User ID, phone, and OTP code are required' });
+  }
+
+  try {
+    const formattedPhone = formatPhoneNumber(phone);
+    
+    // Verify OTP
+    const verification = await verifyOTP(formattedPhone, code);
+    if (!verification.valid) {
+      return res.status(400).json({ message: 'Invalid or expired OTP code' });
+    }
+
+    // Get user and generate token
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: 'Account not active' });
+    }
+
+    const token = signToken(user);
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        phone: user.phone,
+        bio: user.bio,
+        avatar: user.avatar,
+        address: user.address,
+        createdAt: user.createdAt
+      } 
+    });
+  } catch (error) {
+    console.error('Verify login error:', error);
+    res.status(500).json({ message: error.message || 'Verification failed' });
+  }
+}
+
+// Resend OTP
+async function resendOTP(req, res) {
+  const { phone } = req.body;
+  if (!phone) {
+    return res.status(400).json({ message: 'Phone number is required' });
+  }
+
+  try {
+    const formattedPhone = formatPhoneNumber(phone);
+    await sendOTP(formattedPhone);
+    res.json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    res.status(500).json({ message: error.message || 'Failed to send OTP' });
+  }
 }
 
 // Update Profile (authenticated user)
@@ -249,5 +376,16 @@ async function getProfile(req, res) {
   }
 }
 
-module.exports = { register, login, getProfile, updateProfile, forgotPassword, resetPassword, changePassword };
+module.exports = { 
+  register, 
+  verifyRegistration,
+  login, 
+  verifyLogin,
+  resendOTP,
+  getProfile, 
+  updateProfile, 
+  forgotPassword, 
+  resetPassword, 
+  changePassword 
+};
 

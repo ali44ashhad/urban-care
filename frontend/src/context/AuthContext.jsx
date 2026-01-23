@@ -42,30 +42,60 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // login: calls backend and stores token + user
-  const login = useCallback(async (email, password) => {
-    const res = await authService.login({ email, password })
-    const payload = res.data
-    if (payload?.token) {
-      setAuthToken(payload.token)
+  // login: Step 1 - verify credentials and send OTP
+  // If otpData and code provided, it's Step 2 - verify OTP
+  // If resend is true, resend OTP
+  const login = useCallback(async (email, password, otpData = null, code = null, resend = false) => {
+    if (resend && otpData) {
+      // Resend OTP
+      const res = await authService.resendOTP({ phone: otpData.phone })
+      return res.data
     }
-    // backend may return user under payload.user or payload
-    const u = payload.user ?? payload.userData ?? payload
-    if (u && u.id === undefined && u._id) u.id = u._id
-    setUser(u)
-    if (u) localStorage.setItem('user', JSON.stringify(u))
-    return u
+
+    if (otpData && code) {
+      // Step 2: Verify OTP
+      const res = await authService.verifyLogin({
+        userId: otpData.userId,
+        phone: otpData.phone,
+        code: code
+      })
+      const payload = res.data
+      if (payload?.token) {
+        setAuthToken(payload.token)
+      }
+      const u = payload.user ?? payload
+      if (u && u.id === undefined && u._id) u.id = u._id
+      setUser(u)
+      if (u) localStorage.setItem('user', JSON.stringify(u))
+      return u
+    }
+
+    // Step 1: Initial login - send OTP
+    const res = await authService.login({ email, password })
+    return res.data
   }, [])
 
-  // register
-  const register = useCallback(async (payload) => {
+  // register: Step 1 - create user and send OTP
+  // If otpData and code provided, it's Step 2 - verify OTP
+  const register = useCallback(async (payload, otpData = null, code = null) => {
+    if (otpData && code) {
+      // Step 2: Verify OTP and complete registration
+      const res = await authService.verifyRegistration({
+        userId: otpData.userId,
+        phone: otpData.phone,
+        code: code
+      })
+      const data = res.data
+      if (data?.token) setAuthToken(data.token)
+      const u = data.user ?? data
+      setUser(u)
+      if (u) localStorage.setItem('user', JSON.stringify(u))
+      return u
+    }
+
+    // Step 1: Initial registration - create user and send OTP
     const res = await authService.register(payload)
-    const data = res.data
-    if (data?.token) setAuthToken(data.token)
-    const u = data.user ?? data
-    setUser(u)
-    if (u) localStorage.setItem('user', JSON.stringify(u))
-    return u
+    return res.data
   }, [])
 
   // logout

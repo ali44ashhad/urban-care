@@ -25,6 +25,7 @@ const Cancellation = lazy(() => import('./pages/public/Cancellation'))
 const HelpCenter = lazy(() => import('./pages/public/HelpCenter')) 
 const HowItWorks = lazy(() => import('./pages/public/HowItWorks'))
 const FAQ = lazy(() => import('./pages/public/FAQ'))
+const Warranty = lazy(() => import('./pages/public/Warranty'))
 
 const Login = lazy(() => import('./pages/auth/Login'))
 const Register = lazy(() => import('./pages/auth/Register'))
@@ -135,7 +136,7 @@ export default function App() {
           <Route path="help-center" element={<HelpCenter />} /> 
           <Route path="how-it-works" element={<HowItWorks />} />
           <Route path="faq" element={<FAQ />} />
-
+          <Route path="warranty" element={<Warranty />} />
           {/* Auth */}
           <Route path="auth">
             <Route path="login" element={<Login />} />

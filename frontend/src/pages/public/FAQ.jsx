@@ -9,8 +9,8 @@ export default function FAQ() {
       category: 'General',
       questions: [
         {
-          q: 'What services does RAWW offer?',
-          a: 'RAWW offers a wide range of professional home care services including AC cleaning, deep cleaning, plumbing, electrical work, beauty services, and more. Browse our services page to see the complete list.'
+          q: 'What services does Stunn offer?',
+          a: 'Stunn offers a wide range of professional home care services including AC cleaning, deep cleaning, plumbing, electrical work, beauty services, and more. Browse our services page to see the complete list.'
         },
         {
           q: 'In which cities do you operate?',

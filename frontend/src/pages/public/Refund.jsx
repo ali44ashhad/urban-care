@@ -15,7 +15,7 @@ export default function Refund() {
                 <h2 className="text-2xl font-semibold mb-3">1. Refund Eligibility</h2>
                 <p>
                   Refunds may be available under certain circumstances as outlined in this policy. 
-                  All refund requests are subject to review and approval by RAWW Platform.
+                  All refund requests are subject to review and approval by Stunn Platform.
                 </p>
               </section>
 
@@ -71,8 +71,8 @@ export default function Refund() {
                 <h2 className="text-2xl font-semibold mb-3">7. How to Request a Refund</h2>
                 <p>
                   To request a refund, please contact our customer support team at{' '}
-                  <a href="mailto:support@raww.com" className="text-blue-600 hover:underline">
-                    support@raww.com
+                  <a href="mailto:support@stunn.com" className="text-blue-600 hover:underline">
+                    support@stunn.com
                   </a>{' '}
                   or through the contact form on our website. Please include your booking reference 
                   number and reason for the refund request.
