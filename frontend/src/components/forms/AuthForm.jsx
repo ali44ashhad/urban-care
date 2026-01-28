@@ -309,7 +309,7 @@ export default function AuthForm({
           />
 
           <Input
-            label="Email (Optional)"
+            label="Email "
             value={form.email}
             onChange={e => setField('email', e.target.value)}
             placeholder="you@example.com"
@@ -317,7 +317,7 @@ export default function AuthForm({
           />
 
           <Input
-            label="Password (Optional)"
+            label="Password "
             value={form.password}
             onChange={e => setField('password', e.target.value)}
             placeholder="******"

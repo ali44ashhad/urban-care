@@ -22,12 +22,6 @@ export default function ClientProfile() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
   const [uploading, setUploading] = useState(false)
-  const [changingPassword, setChangingPassword] = useState(false)
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  })
 
   useEffect(() => {
     if (!user) return
@@ -72,34 +66,6 @@ export default function ClientProfile() {
       window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Upload failed', type: 'error' } }))
     } finally {
       setUploading(false)
-    }
-  }
-
-  async function handleChangePassword() {
-    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Please fill all password fields', type: 'error' } }))
-      return
-    }
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'New passwords do not match', type: 'error' } }))
-      return
-    }
-    if (passwordData.newPassword.length < 6) {
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Password must be at least 6 characters', type: 'error' } }))
-      return
-    }
-
-    try {
-      await authService.changePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      })
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-      setChangingPassword(false)
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Password changed successfully', type: 'success' } }))
-    } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to change password'
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: errorMsg, type: 'error' } }))
     }
   }
 
@@ -233,12 +199,6 @@ export default function ClientProfile() {
               onChange={(e) => setField('phone', e.target.value)} 
               placeholder="+91 XXXXX XXXXX"
             />
-            <Input 
-              label="Avatar URL" 
-              value={form.avatar} 
-              onChange={(e) => setField('avatar', e.target.value)} 
-              placeholder="https://example.com/avatar.jpg"
-            />
           </div>
 
           <div>
@@ -250,53 +210,6 @@ export default function ClientProfile() {
               rows="3"
               className="w-full rounded-lg sm:rounded-xl border border-gray-200 px-3 sm:px-4 py-2 sm:py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
-          </div>
-
-          <div className="pt-4 border-t">
-            <h4 className="text-base font-semibold text-gray-800 mb-3">Change Password</h4>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setChangingPassword(!changingPassword)}
-              className="mb-4"
-            >
-              {changingPassword ? 'Cancel' : 'Change Password'}
-            </Button>
-
-            {changingPassword && (
-              <div className="space-y-4 bg-gray-50 p-4 rounded-lg mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                  <Input
-                    type="password"
-                    value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                    placeholder="Enter current password"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                  <Input
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                    placeholder="Enter new password (min 6 characters)"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                  <Input
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                    placeholder="Confirm new password"
-                  />
-                </div>
-                <Button onClick={handleChangePassword} className="w-full">
-                  Update Password
-                </Button>
-              </div>
-            )}
           </div>
 
           <div className="pt-4 border-t">
@@ -329,55 +242,6 @@ export default function ClientProfile() {
               />
             </div>
           </div>
-        </div>
-
-        {/* Change Password Section */}
-        <div className="mt-8 pt-6 border-t">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Change Password</h3>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setChangingPassword(!changingPassword)}
-            >
-              {changingPassword ? 'Cancel' : 'Change Password'}
-            </Button>
-          </div>
-
-          {changingPassword && (
-            <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                <Input
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                  placeholder="Enter current password"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                <Input
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  placeholder="Enter new password (min 6 characters)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                <Input
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                  placeholder="Confirm new password"
-                />
-              </div>
-              <Button onClick={handleChangePassword} className="w-full">
-                Update Password
-              </Button>
-            </div>
-          )}
         </div>
 
         {message && (

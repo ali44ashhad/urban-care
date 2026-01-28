@@ -15,12 +15,17 @@ export default function CategoryServices() {
   const { user } = useAuthContext();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   const [categoryName, setCategoryName] = useState('');
   const [categoryDetails, setCategoryDetails] = useState(null);
   const [allCategories, setAllCategories] = useState([]);
   const [serviceReviews, setServiceReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
+  const PAGE_LIMIT = 20;
 
   // Normalize the category slug from URL
   const category = normalizeSlug(categoryParam || '');
@@ -65,10 +70,16 @@ export default function CategoryServices() {
       if (matchedCategory) {
         setCategoryName(matchedCategory.name);
         setCategoryDetails(matchedCategory);
-        // Now fetch services using the exact category name
-        const res = await servicesService.list({ category: matchedCategory.name });
+        // Now fetch services using the exact category name (first page)
+        const res = await servicesService.list({
+          category: matchedCategory.name,
+          page: 1,
+          limit: PAGE_LIMIT
+        });
         const servicesList = res.data?.items || res.data || [];
         setServices(servicesList);
+        setPage(1);
+        setHasMore(servicesList.length === PAGE_LIMIT);
         
         // Auto-select first service
         if (servicesList.length > 0) {
@@ -82,6 +93,27 @@ export default function CategoryServices() {
       console.error('Failed to load services:', err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadMoreServices() {
+    if (loadingMore || !hasMore || !categoryDetails) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await servicesService.list({
+        category: categoryDetails.name,
+        page: nextPage,
+        limit: PAGE_LIMIT
+      });
+      const newItems = res.data?.items || res.data || [];
+      setServices(prev => [...prev, ...newItems]);
+      setPage(nextPage);
+      setHasMore(newItems.length === PAGE_LIMIT);
+    } catch (err) {
+      console.error('Failed to load more services:', err);
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -378,6 +410,14 @@ export default function CategoryServices() {
                   </div>
                 </motion.div>
               ))}
+
+              {hasMore && (
+                <div className="mt-4 flex justify-center">
+                  <Button onClick={loadMoreServices} disabled={loadingMore}>
+                    {loadingMore ? 'Loading...' : 'Load more services'}
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* RIGHT COLUMN - Service Detail Card */}

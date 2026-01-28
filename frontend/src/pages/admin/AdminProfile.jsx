@@ -8,17 +8,11 @@ export default function AdminProfile() {
   const { user, setUser } = useAuthContext()
   const [editing, setEditing] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [changingPassword, setChangingPassword] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     avatar: ''
-  })
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
   })
 
   useEffect(() => {
@@ -95,34 +89,6 @@ export default function AdminProfile() {
       window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Profile updated', type: 'success' } }))
     } catch (err) {
       alert('Failed to update profile')
-    }
-  }
-
-  async function handleChangePassword() {
-    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Please fill all password fields', type: 'error' } }))
-      return
-    }
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'New passwords do not match', type: 'error' } }))
-      return
-    }
-    if (passwordData.newPassword.length < 6) {
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Password must be at least 6 characters', type: 'error' } }))
-      return
-    }
-
-    try {
-      await authService.changePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      })
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-      setChangingPassword(false)
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Password changed successfully', type: 'success' } }))
-    } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Failed to change password'
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: errorMsg, type: 'error' } }))
     }
   }
 
@@ -258,55 +224,6 @@ export default function AdminProfile() {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Security Section */}
-      <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg">Change Password</h3>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setChangingPassword(!changingPassword)}
-          >
-            {changingPassword ? 'Cancel' : 'Change Password'}
-          </Button>
-        </div>
-
-        {changingPassword && (
-          <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-              <Input
-                type="password"
-                value={passwordData.currentPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                placeholder="Enter current password"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-              <Input
-                type="password"
-                value={passwordData.newPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                placeholder="Enter new password (min 6 characters)"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-              <Input
-                type="password"
-                value={passwordData.confirmPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                placeholder="Confirm new password"
-              />
-            </div>
-            <Button onClick={handleChangePassword} className="w-full">
-              Update Password
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   )
