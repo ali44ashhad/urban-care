@@ -131,15 +131,23 @@ export default function AuthForm({
   }
 
   function validate() {
-    if (!form.email) return 'Email is required'
-    if (!form.password || form.password.length < 6)
-      return 'Password must be at least 6 characters'
-    if (mode === 'register' && !form.name)
-      return 'Name is required for registration'
-    if (mode === 'register' && !form.phone)
-      return 'Phone number is required for registration'
-    if (mode === 'register' && form.phone && form.phone.length < 10)
-      return 'Please enter a valid phone number'
+    // Login: Only phone required
+    if (mode === 'login') {
+      if (!form.phone) return 'Phone number is required'
+      if (form.phone && form.phone.replace(/\D/g, '').length < 10)
+        return 'Please enter a valid phone number'
+      return null
+    }
+    
+    // Register: name, phone required; email and password optional
+    if (mode === 'register') {
+      if (!form.name) return 'Name is required for registration'
+      if (!form.phone) return 'Phone number is required for registration'
+      if (form.phone && form.phone.replace(/\D/g, '').length < 10)
+        return 'Please enter a valid phone number'
+      return null
+    }
+    
     return null
   }
 
@@ -159,12 +167,14 @@ export default function AuthForm({
       let response
 
       if (mode === 'login') {
-        response = await contextLogin(form.email, form.password)
+        // Phone-only login
+        response = await contextLogin(form.phone)
       } else {
+        // Registration with optional email/password
         response = await contextRegister({
           name: form.name,
-          email: form.email,
-          password: form.password,
+          email: form.email || undefined, // Optional
+          password: form.password || undefined, // Optional
           phone: form.phone,
           role: form.role
         })
@@ -194,12 +204,14 @@ export default function AuthForm({
     try {
       let user
       if (mode === 'login') {
-        user = await contextLogin(form.email, form.password, otpData, code)
+        // Phone-only login verification
+        user = await contextLogin(form.phone, otpData, code)
       } else {
+        // Registration verification
         user = await contextRegister({
           name: form.name,
-          email: form.email,
-          password: form.password,
+          email: form.email || undefined,
+          password: form.password || undefined,
           phone: form.phone,
           role: form.role
         }, otpData, code)
@@ -216,7 +228,8 @@ export default function AuthForm({
   async function handleResendOTP() {
     try {
       if (mode === 'login') {
-        await contextLogin(form.email, form.password, otpData, null, true)
+        // Phone-only login resend
+        await contextLogin(form.phone, otpData, null, true)
       } else {
         // For registration, resend OTP
         await authService.resendOTP({ phone: otpData.phone })
@@ -263,43 +276,57 @@ export default function AuthForm({
           : 'Create a new account'}
       </h3>
 
-      {mode === 'register' && (
-        <Input
-          label="Full name"
-          value={form.name}
-          onChange={e => setField('name', e.target.value)}
-          placeholder="e.g. Priya Sharma"
-        />
-      )}
-
-      <Input
-        label="Email"
-        value={form.email}
-        onChange={e => setField('email', e.target.value)}
-        placeholder="you@example.com"
-        type="email"
-      />
-
-      {mode === 'register' && (
+      {/* Login: Only phone number */}
+      {mode === 'login' && (
         <Input
           label="Phone Number"
           value={form.phone}
           onChange={e => setField('phone', e.target.value)}
           placeholder="9876543210"
           type="tel"
+          required
         />
       )}
 
-      {/* 🔐 Password with Eye Toggle */}
-      <Input
-        label="Password"
-        value={form.password}
-        onChange={e => setField('password', e.target.value)}
-        placeholder="******"
-        type={showPassword ? 'text' : 'password'}
-        showToggle
-        onToggle={() => setShowPassword(p => !p)}
-      />
+      {/* Register: Name, Phone (required), Email and Password (optional) */}
+      {mode === 'register' && (
+        <>
+          <Input
+            label="Full name"
+            value={form.name}
+            onChange={e => setField('name', e.target.value)}
+            placeholder="e.g. Priya Sharma"
+            required
+          />
+          
+          <Input
+            label="Phone Number"
+            value={form.phone}
+            onChange={e => setField('phone', e.target.value)}
+            placeholder="9876543210"
+            type="tel"
+            required
+          />
+
+          <Input
+            label="Email (Optional)"
+            value={form.email}
+            onChange={e => setField('email', e.target.value)}
+            placeholder="you@example.com"
+            type="email"
+          />
+
+          <Input
+            label="Password (Optional)"
+            value={form.password}
+            onChange={e => setField('password', e.target.value)}
+            placeholder="******"
+            type={showPassword ? 'text' : 'password'}
+            showToggle
+            onToggle={() => setShowPassword(p => !p)}
+          />
+        </>
+      )}
 
       {mode === 'register' && showRoleSelector && (
         <Select

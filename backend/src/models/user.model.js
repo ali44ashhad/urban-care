@@ -48,10 +48,10 @@ const ClientProfile = new Schema({
 const UserSchema = new Schema({
   name: { type: String, required: true },
   companyName: { type: String }, // For providers/service agents
-  email: { type: String, required: true, unique: true, index: true },
-  passwordHash: { type: String, required: true },
+  email: { type: String, required: false, unique: true, sparse: true, index: true }, // Optional, but unique if provided
+  passwordHash: { type: String, required: false }, // Keep for existing users, but not required for new logins
   role: { type: String, enum: ['client', 'provider', 'admin'], required: true },
-  phone: { type: String, index: true },
+  phone: { type: String, required: true, unique: true, index: true }, // Required and unique
   bio: { type: String },
   avatar: { type: String },
   address: {

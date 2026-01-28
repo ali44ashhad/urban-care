@@ -42,10 +42,10 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // login: Step 1 - verify credentials and send OTP
+  // login: Step 1 - send OTP to phone number
   // If otpData and code provided, it's Step 2 - verify OTP
   // If resend is true, resend OTP
-  const login = useCallback(async (email, password, otpData = null, code = null, resend = false) => {
+  const login = useCallback(async (phone, otpData = null, code = null, resend = false) => {
     if (resend && otpData) {
       // Resend OTP
       const res = await authService.resendOTP({ phone: otpData.phone })
@@ -55,13 +55,20 @@ export function AuthProvider({ children }) {
     if (otpData && code) {
       // Step 2: Verify OTP
       const res = await authService.verifyLogin({
-        userId: otpData.userId,
         phone: otpData.phone,
-        code: code
+        code: code,
+        userId: otpData.userId // Optional, can find by phone
       })
       const payload = res.data
+      
+      // Check if user needs to register
+      if (payload?.requiresRegistration) {
+        throw new Error('User not found. Please register first.')
+      }
+      
       if (payload?.token) {
         setAuthToken(payload.token)
+        Cookies.set('token', payload.token, { expires: 30 })
       }
       const u = payload.user ?? payload
       if (u && u.id === undefined && u._id) u.id = u._id
@@ -70,8 +77,8 @@ export function AuthProvider({ children }) {
       return u
     }
 
-    // Step 1: Initial login - send OTP
-    const res = await authService.login({ email, password })
+    // Step 1: Initial login - send OTP to phone
+    const res = await authService.login({ phone })
     return res.data
   }, [])
 

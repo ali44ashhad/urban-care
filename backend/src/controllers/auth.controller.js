@@ -8,33 +8,71 @@ const { sendOTP, verifyOTP, formatPhoneNumber } = require('../utils/twilio.util'
 // Register (client or provider or admin) - Step 1: Create user and send OTP
 async function register(req, res) {
   const { name, email, password, role, phone, profile } = req.body;
-  if (!name || !email || !password || !role || !phone) {
-    return res.status(400).json({ message: 'Missing required fields (name, email, password, role, phone)' });
+  if (!name || !role || !phone) {
+    return res.status(400).json({ message: 'Missing required fields (name, role, phone)' });
   }
-  const existing = await User.findOne({ email });
-  if (existing) return res.status(409).json({ message: 'Email already exists' });
 
   try {
     // Format phone number
     const formattedPhone = formatPhoneNumber(phone);
     
+    // Check if phone already exists (enforce uniqueness)
+    const existingByPhone = await User.findOne({ phone: formattedPhone });
+    if (existingByPhone) {
+      return res.status(409).json({ message: 'Phone number already registered. Please login instead.' });
+    }
+
+    // Check email if provided (optional but unique if provided)
+    if (email) {
+      const existingByEmail = await User.findOne({ email });
+      if (existingByEmail) {
+        return res.status(409).json({ message: 'Email already exists' });
+      }
+    }
+
     // Create user (but don't activate yet - will be activated after OTP verification)
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, passwordHash, role, phone: formattedPhone, profile, isActive: false });
+    // Password is optional now, but hash it if provided for existing users
+    const passwordHash = password ? await bcrypt.hash(password, 10) : undefined;
+    const user = new User({ 
+      name, 
+      email: email || undefined, // Optional
+      passwordHash, // Optional
+      role, 
+      phone: formattedPhone, 
+      profile, 
+      isActive: false 
+    });
     await user.save();
 
+    console.log('✅ User created, sending OTP to:', formattedPhone);
     // Send OTP to phone
-    await sendOTP(formattedPhone);
+    const otpResult = await sendOTP(formattedPhone);
 
     res.status(201).json({ 
       message: 'OTP sent to your phone number',
       userId: user._id,
       phone: formattedPhone,
-      requiresVerification: true
+      requiresVerification: true,
+      expiresAt: otpResult.expiresAt,
+      expiresIn: otpResult.expiresIn
     });
   } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ message: error.message || 'Registration failed' });
+    console.error('❌ Register error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      keyPattern: error.keyPattern
+    });
+    
+    // Handle duplicate phone error
+    if (error.code === 11000 && error.keyPattern?.phone) {
+      return res.status(409).json({ message: 'Phone number already registered. Please login instead.' });
+    }
+    
+    res.status(500).json({ 
+      message: error.message || 'Registration failed',
+      error: error.message
+    });
   }
 }
 
@@ -85,67 +123,110 @@ async function verifyRegistration(req, res) {
   }
 }
 
-// Login - Step 1: Verify credentials and send OTP
+// Login - Step 1: Send OTP to phone number (phone-only authentication)
 async function login(req, res) {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
-  }
-
-  const user = await User.findOne({ email });
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-  
-  if (!user.isActive) {
-    return res.status(403).json({ message: 'Account not verified. Please verify your phone number.' });
-  }
-
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
-
-  if (!user.phone) {
-    return res.status(400).json({ message: 'Phone number not found. Please update your profile.' });
+  const { phone } = req.body;
+  if (!phone) {
+    return res.status(400).json({ message: 'Phone number is required' });
   }
 
   try {
+    console.log('🔐 Login request for phone:', phone);
+    
+    // Format phone number
+    const formattedPhone = formatPhoneNumber(phone);
+    console.log('📱 Formatted phone:', formattedPhone);
+
+    // Find user by phone number
+    const user = await User.findOne({ phone: formattedPhone });
+    
+    if (!user) {
+      // Don't reveal if user exists - send OTP anyway for security
+      // But we'll handle this in verifyLogin
+      console.log('👤 User not found, sending OTP anyway for security');
+      try {
+        const otpResult = await sendOTP(formattedPhone);
+        return res.json({ 
+          message: 'OTP sent to your phone number',
+          phone: formattedPhone,
+          requiresVerification: true,
+          isNewUser: true, // Indicate this might be a new user
+          expiresAt: otpResult.expiresAt,
+          expiresIn: otpResult.expiresIn
+        });
+      } catch (otpError) {
+        console.error('❌ OTP send failed for new user:', otpError);
+        return res.status(400).json({ 
+          message: otpError.message || 'Failed to send OTP. Please check your phone number and try again.',
+          error: otpError.message
+        });
+      }
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: 'Account not active. Please contact support.' });
+    }
+
+    console.log('✅ User found, sending OTP');
     // Send OTP to user's phone
-    await sendOTP(user.phone);
+    const otpResult = await sendOTP(formattedPhone);
 
     res.json({ 
       message: 'OTP sent to your phone number',
       userId: user._id,
-      phone: user.phone,
-      requiresVerification: true
+      phone: formattedPhone,
+      requiresVerification: true,
+      expiresAt: otpResult.expiresAt,
+      expiresIn: otpResult.expiresIn
     });
   } catch (error) {
-    console.error('Login send OTP error:', error);
-    res.status(500).json({ message: error.message || 'Failed to send OTP' });
+    console.error('❌ Login send OTP error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: error.message || 'Failed to send OTP',
+      error: error.message
+    });
   }
 }
 
-// Verify OTP and complete login
+// Verify OTP and complete login (phone-only authentication)
 async function verifyLogin(req, res) {
-  const { userId, phone, code } = req.body;
-  if (!userId || !phone || !code) {
-    return res.status(400).json({ message: 'User ID, phone, and OTP code are required' });
+  const { phone, code, userId } = req.body;
+  if (!phone || !code) {
+    return res.status(400).json({ message: 'Phone number and OTP code are required' });
   }
 
   try {
     const formattedPhone = formatPhoneNumber(phone);
     
-    // Verify OTP
+    // Verify OTP first
     const verification = await verifyOTP(formattedPhone, code);
     if (!verification.valid) {
       return res.status(400).json({ message: 'Invalid or expired OTP code' });
     }
 
-    // Get user and generate token
-    const user = await User.findById(userId);
+    // Find user by phone number (userId is optional, we can find by phone)
+    let user;
+    if (userId) {
+      user = await User.findById(userId);
+    } else {
+      user = await User.findOne({ phone: formattedPhone });
+    }
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ 
+        message: 'User not found. Please register first.',
+        requiresRegistration: true
+      });
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: 'Account not active' });
+      return res.status(403).json({ message: 'Account not active. Please contact support.' });
+    }
+
+    // Verify phone matches
+    if (user.phone !== formattedPhone) {
+      return res.status(400).json({ message: 'Phone number mismatch' });
     }
 
     const token = signToken(user);

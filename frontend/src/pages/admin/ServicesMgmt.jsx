@@ -175,12 +175,19 @@ export default function ServicesMgmt() {
         </div>
       )}
 
-      <Modal open={showForm} onClose={() => setShowForm(false)}>
+      <Modal open={showForm} onClose={() => { setShowForm(false); setEditing(null) }}>
         <div className="p-4">
-          <ServiceForm initial={editing} onSaved={(res) => {
-            if (editing) handleUpdate(res)
-            else handleCreate(res)
-          }} />
+          <ServiceForm
+            initial={editing}
+            onSaved={(res) => {
+              if (editing) handleUpdate(res)
+              else handleCreate(res)
+            }}
+            onCancel={() => {
+              setShowForm(false)
+              setEditing(null)
+            }}
+          />
         </div>
       </Modal>
     </div>

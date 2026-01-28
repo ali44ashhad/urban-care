@@ -12,8 +12,8 @@ import api from './apiClient';
 const authService = {
   register: (payload) => api.post('/auth/register', payload),
   verifyRegistration: (payload) => api.post('/auth/register/verify', payload),
-  login: (payload) => api.post('/auth/login', payload),
-  verifyLogin: (payload) => api.post('/auth/login/verify', payload),
+  login: (payload) => api.post('/auth/login', payload), // Now accepts { phone } instead of { email, password }
+  verifyLogin: (payload) => api.post('/auth/login/verify', payload), // Now accepts { phone, code, userId? }
   resendOTP: (payload) => api.post('/auth/resend-otp', payload),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (payload) => api.put('/auth/profile', payload),

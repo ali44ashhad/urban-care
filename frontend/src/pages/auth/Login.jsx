@@ -27,7 +27,7 @@ export default function Login() {
         <AuthForm mode="login" onSuccess={handleSuccess} />
 
         <div className="mt-4 text-center text-sm text-gray-600">
-          <a href="/auth/forgot" className="text-blue-600 hover:underline">Forgot password?</a>
+          <p>Login with your phone number. We'll send you an OTP to verify.</p>
         </div>
       </div>
     </div>
