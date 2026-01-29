@@ -265,8 +265,8 @@ export default function CategoryServices() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* LEFT COLUMN - Other Categories & UC Promise */}
-            <div className="lg:col-span-3 space-y-6">
+            {/* LEFT COLUMN - Other Categories & UC Promise (below on mobile only) */}
+            <div className="lg:col-span-3 space-y-6 order-3 md:order-1">
               {/* Other Categories */}
               <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Other Categories</h3>
@@ -340,8 +340,8 @@ export default function CategoryServices() {
               </div>
             </div>
 
-            {/* CENTER COLUMN - Services List */}
-            <div className="lg:col-span-5 space-y-4">
+            {/* CENTER COLUMN - Services List (first on mobile only) */}
+            <div className="lg:col-span-5 space-y-4 order-1 md:order-2">
               <h2 className="text-xl font-bold text-gray-800 mb-4">Available Services</h2>
               
               {services.map((service, idx) => (
@@ -420,8 +420,8 @@ export default function CategoryServices() {
               )}
             </div>
 
-            {/* RIGHT COLUMN - Service Detail Card */}
-            <div className="lg:col-span-4" id="service-detail">
+            {/* RIGHT COLUMN - Service Detail Card (second on mobile only) */}
+            <div className="lg:col-span-4 order-2 md:order-3" id="service-detail">
               {selectedService ? (
                 <div className="sticky top-4 space-y-6">
                   {/* Service Detail Card */}

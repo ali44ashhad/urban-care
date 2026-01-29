@@ -27,6 +27,21 @@ async function createWarranty(req, res) {
     status: 'pending'
   });
 
+  // Upload attachments to Cloudinary if any
+  if (req.files?.length) {
+    const { uploadFromBuffer, isConfigured } = require('../utils/cloudinary');
+    if (isConfigured()) {
+      const urls = [];
+      for (const file of req.files) {
+        const resourceType = file.mimetype === 'application/pdf' ? 'raw' : 'image';
+        const result = await uploadFromBuffer(file.buffer, 'urban-care/warranty-attachments', resourceType);
+        urls.push(result.secure_url);
+      }
+      w.attachmentUrls = urls;
+      await w.save();
+    }
+  }
+
   // Update booking status
   booking.status = 'warranty_requested';
   booking.warrantyRequests.push(w._id);

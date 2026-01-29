@@ -63,19 +63,13 @@ export default function AdminProfile() {
 
     setUploading(true)
     try {
-      // In a real app, you'd upload to server
-      // const res = await authService.uploadAvatar(file)
-      // For now, create a local preview
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setFormData({ ...formData, avatar: reader.result })
-        window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Image uploaded successfully', type: 'success' } }))
-        setUploading(false)
-      }
-      reader.readAsDataURL(file)
+      const res = await authService.uploadAvatar(file)
+      setFormData(prev => ({ ...prev, avatar: res.data.avatar }))
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Image uploaded successfully', type: 'success' } }))
     } catch (err) {
       console.error('Upload error:', err)
-      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Upload failed', type: 'error' } }))
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: err.response?.data?.message || 'Upload failed', type: 'error' } }))
+    } finally {
       setUploading(false)
     }
   }

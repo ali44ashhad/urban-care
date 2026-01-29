@@ -10,7 +10,7 @@ function checkTwilioConfig() {
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
 
-  console.log('\n🔍 Twilio Configuration Check:');
+  // console.log('\n🔍 Twilio Configuration Check:');
   console.log('================================');
   
   if (!accountSid) {
@@ -32,11 +32,11 @@ function checkTwilioConfig() {
     console.log('✅ TWILIO_VERIFY_SERVICE_SID:', verifyServiceSid);
   }
 
-  console.log('\n📝 Required .env variables:');
-  console.log('   TWILIO_ACCOUNT_SID=AC...');
-  console.log('   TWILIO_AUTH_TOKEN=...');
-  console.log('   TWILIO_VERIFY_SERVICE_SID=VA...');
-  console.log('\n');
+  // console.log('\n📝 Required .env variables:');
+  // console.log('   TWILIO_ACCOUNT_SID=AC...');
+  // console.log('   TWILIO_AUTH_TOKEN=...');
+  // console.log('   TWILIO_VERIFY_SERVICE_SID=VA...');
+  // console.log('\n');
 
   // Try to initialize client
   if (accountSid && authToken) {

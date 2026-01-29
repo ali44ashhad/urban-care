@@ -225,25 +225,30 @@ async function assignProvider(req, res) {
   res.json(booking);
 }
 
-// Upload warranty slip
+// Upload warranty slip (to Cloudinary)
 async function uploadWarrantySlip(req, res) {
   const providerId = req.user._id;
   const { id } = req.params;
-  
+  const { uploadFromBuffer, isConfigured } = require('../utils/cloudinary');
+
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
-  
+  if (!isConfigured()) {
+    return res.status(503).json({ message: 'Upload not configured. Set CLOUDINARY_* in .env' });
+  }
+
   const booking = await Booking.findById(id);
   if (!booking) return res.status(404).json({ message: 'Booking not found' });
   if (String(booking.providerId) !== String(providerId)) {
     return res.status(403).json({ message: 'Forbidden' });
   }
-  
-  // Store the file path (relative URL)
-  booking.warrantySlip = `/uploads/warranty-slips/${req.file.filename}`;
+
+  const resourceType = req.file.mimetype === 'application/pdf' ? 'raw' : 'image';
+  const result = await uploadFromBuffer(req.file.buffer, 'urban-care/warranty-slips', resourceType);
+  booking.warrantySlip = result.secure_url;
   await booking.save();
-  
+
   res.json({ warrantySlip: booking.warrantySlip, message: 'Warranty slip uploaded successfully' });
 }
 

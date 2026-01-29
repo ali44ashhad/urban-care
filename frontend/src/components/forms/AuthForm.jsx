@@ -308,15 +308,15 @@ export default function AuthForm({
             required
           />
 
-          <Input
+          {/* <Input
             label="Email "
             value={form.email}
             onChange={e => setField('email', e.target.value)}
             placeholder="you@example.com"
             type="email"
-          />
+          /> */}
 
-          <Input
+          {/* <Input
             label="Password "
             value={form.password}
             onChange={e => setField('password', e.target.value)}
@@ -324,7 +324,7 @@ export default function AuthForm({
             type={showPassword ? 'text' : 'password'}
             showToggle
             onToggle={() => setShowPassword(p => !p)}
-          />
+          /> */}
         </>
       )}
 

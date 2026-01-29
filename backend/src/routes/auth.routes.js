@@ -1,8 +1,9 @@
- const express = require('express');
+const express = require('express');
 const router = express.Router();
 const { register, verifyRegistration, login, verifyLogin, resendOTP, getProfile, updateProfile, forgotPassword, resetPassword, changePassword } = require('../controllers/auth.controller');
 const { authMiddleware } = require('../middlewares/auth.middleware');
 const { uploadAvatar } = require('../middlewares/upload.middleware');
+const { uploadFromBuffer, isConfigured } = require('../utils/cloudinary');
 
 router.post('/register', register);
 router.post('/register/verify', verifyRegistration);
@@ -14,15 +15,17 @@ router.post('/reset-password', resetPassword);
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, updateProfile);
 router.post('/change-password', authMiddleware, changePassword);
-router.post('/upload-avatar', authMiddleware, uploadAvatar, (req, res) => {
+router.post('/upload-avatar', authMiddleware, uploadAvatar, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    
-    // Return the file URL
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-    res.json({ 
+    if (!isConfigured()) {
+      return res.status(503).json({ message: 'Avatar upload is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env' });
+    }
+    const result = await uploadFromBuffer(req.file.buffer, 'urban-care/avatars');
+    const avatarUrl = result.secure_url;
+    res.json({
       message: 'Avatar uploaded successfully',
       avatar: avatarUrl,
       url: avatarUrl
