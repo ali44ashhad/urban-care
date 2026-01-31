@@ -25,7 +25,9 @@ export default function Reviews() {
     setLoading(true)
     try {
       const bres = await bookingsService.list()
-      const completedBookings = (bres.data?.items || bres.data || []).filter(b => b.status === 'completed')
+      // Include completed + warranty_requested/warranty_claimed so client can review even after claiming warranty
+      const reviewableStatuses = ['completed', 'warranty_requested', 'warranty_claimed']
+      const completedBookings = (bres.data?.items || bres.data || []).filter(b => reviewableStatuses.includes(b.status))
       setMyBookings(completedBookings)
       
       // Load client's own reviews

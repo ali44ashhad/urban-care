@@ -91,7 +91,8 @@ export default function BookingDetail() {
   if (loading) return <LoadingSpinner/>
   if (!booking) return <div className="p-6">Not found</div>
 
-  const canReview = booking.status === 'completed' && !hasReviewed
+  // Allow review when service is completed or after warranty claim (status changes to warranty_requested/warranty_claimed)
+  const canReview = ['completed', 'warranty_requested', 'warranty_claimed'].includes(booking.status) && !hasReviewed
   const service = booking.serviceId || booking.service
   
   // Check if warranty period is still valid

@@ -284,20 +284,6 @@ export default function ProvidersMgmt() {
                   placeholder="e.g. 9876543210"
                   required
                 />
-                {/* <Input
-                  label="Email (optional)"
-                  type="email"
-                  value={onboardForm.email}
-                  onChange={(e) => setOnboardForm(f => ({ ...f, email: e.target.value }))}
-                  placeholder="provider@example.com"
-                />
-                <Input
-                  label="Password (optional)"
-                  type="password"
-                  value={onboardForm.password}
-                  onChange={(e) => setOnboardForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="Leave blank for default"
-                /> */}
                 {onboardError && <div className="text-sm text-red-600">{onboardError}</div>}
                 <div className="flex gap-2 pt-2">
                   <Button type="submit" loading={onboardSubmitting} variant="primary">

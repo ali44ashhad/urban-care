@@ -298,60 +298,61 @@ function formatDate(dateString) {
           </div>
         </Card>
 
-        {/* Actions */}
-        {/* <Card>
+        {/* Actions — Accept / Reject (pending), Start Job (accepted), Complete (in_progress), Cancel */}
+        <Card>
           <h2 className="text-xl font-semibold mb-4">Actions</h2>
           <div className="flex flex-wrap gap-3">
             {canAccept && (
               <>
-                <button
+                <Button
                   onClick={handleAccept}
                   disabled={actionLoading}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  variant="primary"
                 >
                   {actionLoading ? 'Processing...' : '✓ Accept Booking'}
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setShowRejectModal(true)}
                   disabled={actionLoading}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  variant="secondary"
+                  className="bg-red-100 text-red-700 hover:bg-red-200"
                 >
                   ✕ Reject Booking
-                </button>
+                </Button>
               </>
             )}
             {canStart && (
-              <button
+              <Button
                 onClick={handleStart}
                 disabled={actionLoading}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                variant="primary"
               >
-                {actionLoading ? 'Processing...' : '▶ Start Job'}
-              </button>
+                {actionLoading ? 'Processing...' : '▶ In Progress (Start Job)'}
+              </Button>
             )}
             {canComplete && (
-              <button
+              <Button
                 onClick={handleComplete}
                 disabled={actionLoading}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                variant="primary"
               >
-                {actionLoading ? 'Processing...' : '✓ Complete Job'}
-              </button>
+                {actionLoading ? 'Processing...' : '✓ Completed (Complete Job)'}
+              </Button>
             )}
             {canCancel && (
-              <button
+              <Button
                 onClick={() => setShowCancelModal(true)}
                 disabled={actionLoading}
-                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                variant="secondary"
               >
                 🚫 Cancel Booking
-              </button>
+              </Button>
             )}
             {!canAccept && !canStart && !canComplete && !canCancel && (
               <p className="text-gray-500">No actions available for this booking status</p>
             )}
           </div>
-        </Card> */}
+        </Card>
 
         {/* Warranty Upload */}
         {/* {canUploadWarranty && (
