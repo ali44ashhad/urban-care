@@ -3,14 +3,25 @@ const User = require('../models/user.model');
 const Booking = require('../models/booking.model');
 const Warranty = require('../models/warranty.model');
 const Review = require('../models/review.model');
+const { formatPhoneNumber } = require('../utils/twilio.util');
 
 // onboard provider (admin)
 async function onboardProvider(req, res) {
   const { name, email, password, phone, profile } = req.body;
-  // create provider user
+  if (!phone) {
+    return res.status(400).json({ message: 'Phone number is required' });
+  }
+  // Use same phone format as auth (login/verify) so provider can log in with their number
+  const formattedPhone = formatPhoneNumber(phone);
+  const existing = await User.findOne({ phone: formattedPhone });
+  if (existing) {
+    return res.status(409).json({ message: 'A user with this phone number already exists' });
+  }
   const bcrypt = require('bcryptjs');
   const passwordHash = await bcrypt.hash(password || 'changeme', 10);
-  const provider = new User({ name, email, passwordHash, role: 'provider', phone, profile });
+  const doc = { name, passwordHash, role: 'provider', phone: formattedPhone, profile };
+  if (email && String(email).trim()) doc.email = email.trim();
+  const provider = new User(doc);
   await provider.save();
   res.status(201).json(provider);
 }

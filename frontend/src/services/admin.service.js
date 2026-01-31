@@ -19,6 +19,8 @@ const adminService = {
   // User management
   listUsers: (params) => api.get('/admin/users', { params }),
   toggleUserStatus: (userId, isActive) => api.patch(`/admin/users/${userId}/status`, { isActive }),
+  /** Admin onboard provider — creates provider without OTP; admin stays logged in */
+  onboardProvider: (data) => api.post('/admin/providers', data),
 
   // Pending requests and agent assignment
   getPendingRequests: (params) => api.get('/admin/pending-requests', { params }),

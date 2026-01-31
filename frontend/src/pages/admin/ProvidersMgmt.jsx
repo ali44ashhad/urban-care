@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import adminService from '../../services/admin.service'
 import Button from '../../components/ui/Button'
+import Input from '../../components/ui/Input'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
-import AuthForm from '../../components/forms/AuthForm'
 
 export default function ProvidersMgmt() {
   const [providers, setProviders] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [showOnboardModal, setShowOnboardModal] = useState(false)
+  const [onboardForm, setOnboardForm] = useState({ name: '', phone: '', email: '', password: '' })
+  const [onboardSubmitting, setOnboardSubmitting] = useState(false)
+  const [onboardError, setOnboardError] = useState(null)
 
   useEffect(() => {
     loadProviders()
@@ -70,16 +73,46 @@ export default function ProvidersMgmt() {
     }
   }
 
-  async function handleProviderOnboarded(user) {
+  async function handleProviderOnboarded() {
     setShowOnboardModal(false)
+    setOnboardForm({ name: '', phone: '', email: '', password: '' })
+    setOnboardError(null)
     window.dispatchEvent(new CustomEvent('app:toast', { 
       detail: { 
-        message: 'Provider onboarded successfully', 
+        message: 'Provider onboarded successfully. Provider can login with their phone number.', 
         type: 'success' 
       } 
     }))
-    // Reload providers list
     loadProviders()
+  }
+
+  async function handleOnboardSubmit(e) {
+    e.preventDefault()
+    setOnboardError(null)
+    const { name, phone } = onboardForm
+    if (!name?.trim()) {
+      setOnboardError('Full name is required')
+      return
+    }
+    if (!phone?.trim()) {
+      setOnboardError('Phone number is required')
+      return
+    }
+    setOnboardSubmitting(true)
+    try {
+      await adminService.onboardProvider({
+        name: name.trim(),
+        phone: phone.trim(),
+        email: onboardForm.email?.trim() || undefined,
+        password: onboardForm.password?.trim() || undefined
+      })
+      handleProviderOnboarded()
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to onboard provider'
+      setOnboardError(msg)
+    } finally {
+      setOnboardSubmitting(false)
+    }
   }
 
   return (
@@ -231,17 +264,50 @@ export default function ProvidersMgmt() {
               </button>
             </div>
 
-            {/* Content */}
+            {/* Content — admin-only onboard: no OTP, no login; provider logs in later with phone */}
             <div className="p-6">
               <p className="text-sm text-gray-600 mb-4">
-                Create a new provider account. The provider will receive their login credentials via email.
+                Create a new provider account. The provider can log in later using their phone number (OTP).
               </p>
-              <AuthForm 
-                mode="register" 
-                defaultRole="provider" 
-                showRoleSelector={false}
-                onSuccess={handleProviderOnboarded}
-              />
+              <form onSubmit={handleOnboardSubmit} className="space-y-4">
+                <Input
+                  label="Full name"
+                  value={onboardForm.name}
+                  onChange={(e) => setOnboardForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="e.g. Priya Sharma"
+                  required
+                />
+                <Input
+                  label="Phone Number"
+                  value={onboardForm.phone}
+                  onChange={(e) => setOnboardForm(f => ({ ...f, phone: e.target.value }))}
+                  placeholder="e.g. 9876543210"
+                  required
+                />
+                {/* <Input
+                  label="Email (optional)"
+                  type="email"
+                  value={onboardForm.email}
+                  onChange={(e) => setOnboardForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="provider@example.com"
+                />
+                <Input
+                  label="Password (optional)"
+                  type="password"
+                  value={onboardForm.password}
+                  onChange={(e) => setOnboardForm(f => ({ ...f, password: e.target.value }))}
+                  placeholder="Leave blank for default"
+                /> */}
+                {onboardError && <div className="text-sm text-red-600">{onboardError}</div>}
+                <div className="flex gap-2 pt-2">
+                  <Button type="submit" loading={onboardSubmitting} variant="primary">
+                    Create account
+                  </Button>
+                  <Button type="button" variant="secondary" onClick={() => setShowOnboardModal(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

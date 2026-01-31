@@ -3,6 +3,24 @@ const mongoose = require('mongoose');
 // Cache the database connection for serverless reuse
 let cachedConnection = null;
 
+/** Ensure users.email index is sparse so multiple users can have no email (E11000 fix) */
+async function ensureEmailIndexSparse() {
+  try {
+    const User = require('../models/user.model');
+    const coll = mongoose.connection.db.collection('users');
+    const indexes = await coll.indexes();
+    const emailIdx = indexes.find((i) => i.name === 'email_1');
+    if (emailIdx && !emailIdx.sparse) {
+      await coll.dropIndex('email_1');
+      console.log('Dropped non-sparse email_1 index');
+    }
+    await User.syncIndexes();
+    console.log('User indexes synced (email is sparse unique)');
+  } catch (e) {
+    console.warn('ensureEmailIndexSparse:', e.message);
+  }
+}
+
 async function connectDB(uri) {
   // If we have a cached connection and it's ready, reuse it
   if (cachedConnection && mongoose.connection.readyState === 1) {
@@ -30,6 +48,7 @@ async function connectDB(uri) {
     
     cachedConnection = mongoose.connection;
     console.log('MongoDB connected successfully');
+    await ensureEmailIndexSparse();
     return cachedConnection;
   } catch (error) {
     console.error('MongoDB connection error:', error);

@@ -5,6 +5,16 @@ const { signToken } = require('../utils/jwt.util');
 const { sendEmail } = require('../utils/email.util');
 const { sendOTP, verifyOTP, formatPhoneNumber } = require('../utils/twilio.util');
 
+/** Find user by phone — tries formatted (e.g. +919027714720) then raw 10-digit for backward compatibility */
+async function findUserByPhone(formattedPhone) {
+  let user = await User.findOne({ phone: formattedPhone });
+  if (!user && formattedPhone.startsWith('+91') && formattedPhone.length >= 13) {
+    const tenDigit = formattedPhone.replace(/\D/g, '').slice(-10);
+    if (tenDigit.length === 10) user = await User.findOne({ phone: tenDigit });
+  }
+  return user;
+}
+
 // Register (client or provider or admin) - Step 1: Create user and send OTP
 async function register(req, res) {
   const { name, email, password, role, phone, profile } = req.body;
@@ -32,16 +42,12 @@ async function register(req, res) {
 
     // Create user (but don't activate yet - will be activated after OTP verification)
     // Password is optional now, but hash it if provided for existing users
+    // Only set email when non-empty so we don't store email: null (avoids E11000 duplicate key with sparse unique index)
     const passwordHash = password ? await bcrypt.hash(password, 10) : undefined;
-    const user = new User({ 
-      name, 
-      email: email || undefined, // Optional
-      passwordHash, // Optional
-      role, 
-      phone: formattedPhone, 
-      profile, 
-      isActive: false 
-    });
+    const userData = { name, role, phone: formattedPhone, profile, isActive: false };
+    if (passwordHash) userData.passwordHash = passwordHash;
+    if (email && String(email).trim()) userData.email = email.trim();
+    const user = new User(userData);
     await user.save();
 
     console.log('✅ User created, sending OTP to:', formattedPhone);
@@ -137,8 +143,8 @@ async function login(req, res) {
     const formattedPhone = formatPhoneNumber(phone);
     console.log('📱 Formatted phone:', formattedPhone);
 
-    // Find user by phone number
-    const user = await User.findOne({ phone: formattedPhone });
+    // Find user by phone (formatted or raw 10-digit)
+    const user = await findUserByPhone(formattedPhone);
     
     if (!user) {
       // Don't reveal if user exists - send OTP anyway for security
@@ -205,12 +211,12 @@ async function verifyLogin(req, res) {
       return res.status(400).json({ message: 'Invalid or expired OTP code' });
     }
 
-    // Find user by phone number (userId is optional, we can find by phone)
+    // Find user by phone (userId optional; try formatted then raw 10-digit)
     let user;
     if (userId) {
       user = await User.findById(userId);
     } else {
-      user = await User.findOne({ phone: formattedPhone });
+      user = await findUserByPhone(formattedPhone);
     }
 
     if (!user) {
@@ -224,8 +230,10 @@ async function verifyLogin(req, res) {
       return res.status(403).json({ message: 'Account not active. Please contact support.' });
     }
 
-    // Verify phone matches
-    if (user.phone !== formattedPhone) {
+    // Normalize stored phone to formatted for response if it was stored raw
+    const storedPhone = user.phone;
+    const normalizedStored = storedPhone && storedPhone.startsWith('+') ? storedPhone : formatPhoneNumber(storedPhone);
+    if (normalizedStored !== formattedPhone) {
       return res.status(400).json({ message: 'Phone number mismatch' });
     }
 
