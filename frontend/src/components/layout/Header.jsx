@@ -168,12 +168,12 @@ export default function Header() {
                     Akshay Nagar, Bangalore
                   </button>
                   <button
-                    onClick={() => handleLocationChange('JP Nagar')}
+                    onClick={() => handleLocationChange('Other')}
                     className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition ${
-                      selectedLocation === 'JP Nagar' ? 'bg-blue-50 text-blue-600 font-medium' : ''
+                      selectedLocation === 'Other' ? 'bg-blue-50 text-blue-600 font-medium' : ''
                     }`}
                   >
-                    JP Nagar, Bangalore
+                    Other Locations
                   </button>
                 </div>
               )}
@@ -348,7 +348,7 @@ export default function Header() {
                     className="flex-1 bg-transparent text-sm font-medium focus:outline-none"
                   >
                     <option value="Akshay Nagar">Akshay Nagar, Bangalore</option>
-                    <option value="JP Nagar">JP Nagar, Bangalore</option>
+                    <option value="Other">Other Locations</option>
                   </select>
                 </div>
               </div>

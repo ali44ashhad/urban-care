@@ -37,9 +37,19 @@ export default function SelectSlot() {
     setError(null)
     
     try {
-      // Generate time slots for the selected date
       const sample = generateTimeSlots()
-      setSlots(sample)
+      const today = new Date().toISOString().slice(0, 10)
+      const isToday = date === today
+      let filtered = sample
+      if (isToday) {
+        const now = new Date()
+        const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+        filtered = sample.filter(s => s.startTime >= currentTime)
+      }
+      setSlots(filtered)
+      if (selectedSlotId && !filtered.find(s => s.id === selectedSlotId)) {
+        setSelectedSlotId(null)
+      }
     } catch (err) {
       console.error('Failed to load slots:', err)
       setError('Failed to load time slots')

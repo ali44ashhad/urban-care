@@ -66,7 +66,7 @@ export default function Contact() {
         </svg>
       ),
       title: 'Service Areas',
-      details: ['Akshay Nagar, Bangalore', 'JP Nagar, Bangalore'],
+      details: ['Akshay Nagar, Bangalore', 'Other, Bangalore'],
       color: 'from-green-500 to-emerald-500'
     },
     {
@@ -131,7 +131,7 @@ export default function Contact() {
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-3xl leading-relaxed">
-              Have questions about our services in Akshay Nagar or JP Nagar? Need support with a booking? 
+              Have questions about our services in Akshay Nagar or Other? Need support with a booking? 
               Our team is ready to assist you with quick, helpful responses.
             </p>
           </motion.div>
@@ -333,7 +333,7 @@ export default function Contact() {
                 color: 'from-blue-500 to-purple-500'
               },
               { 
-                area: 'JP Nagar', 
+                area: 'Other', 
                 description: 'South Bangalore',
                 services: ['AC Service', 'Plumbing', 'Electrical', 'Cleaning', 'Salon'],
                 color: 'from-purple-500 to-pink-500'

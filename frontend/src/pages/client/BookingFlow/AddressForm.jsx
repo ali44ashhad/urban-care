@@ -357,7 +357,7 @@ export default function AddressForm() {
     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
   >
     <option value="">Select City</option>
-    <option value="JP Nagar">JP Nagar</option>
+    <option value="Other">Other Locations</option>
     <option value="Akshay Nagar">Akshay Nagar</option>
   </select>
 </div>

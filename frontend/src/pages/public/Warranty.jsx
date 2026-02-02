@@ -119,7 +119,7 @@ export default function Warranty() {
       date: '2024-03-10',
       expiry: '2024-03-24',
       status: 'Active',
-      location: 'JP Nagar'
+      location: 'Other'
     }
   ]
 
@@ -141,7 +141,7 @@ export default function Warranty() {
     },
     {
       term: 'Local Advantage',
-      description: 'Benefits for Akshay Nagar & JP Nagar',
+      description: 'Benefits for Akshay Nagar & Other',
       details: ['Same-day claim processing', 'Local technician dispatch', 'Area-specific parts availability']
     }
   ]
@@ -180,7 +180,7 @@ export default function Warranty() {
 
             <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
               Every service comes with our comprehensive warranty protection in 
-              <span className="font-semibold text-white"> Akshay Nagar and JP Nagar</span>. 
+              <span className="font-semibold text-white"> Akshay Nagar and Other</span>. 
               Your peace of mind is our priority.
             </p>
  
@@ -305,7 +305,7 @@ export default function Warranty() {
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-10 text-white">
             <h2 className="text-3xl font-bold mb-4">Need Immediate Help?</h2>
             <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-              Our local support team is ready to assist with your warranty claims in Akshay Nagar and JP Nagar
+                Our local support team is ready to assist with your warranty claims in Akshay Nagar and Other
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a

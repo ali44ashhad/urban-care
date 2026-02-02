@@ -15,7 +15,7 @@ export default function About() {
 
   const serviceAreas = [
     { name: 'Akshay Nagar', icon: '🏙️', description: 'South Bangalore' },
-    { name: 'JP Nagar', icon: '🏘️', description: 'South Bangalore' },
+    { name: 'Other', icon: '🏘️', description: 'South Bangalore' },
   ]
 
   const values = [
@@ -23,7 +23,7 @@ export default function About() {
       title: 'Local Expertise',
       description: 'Deep understanding of Bangalore neighborhoods ensures reliable service delivery.',
       icon: '🏡',
-      points: ['Akshay Nagar specialists', 'JP Nagar experts', 'Local knowledge']
+      points: ['Akshay Nagar specialists', 'Other experts', 'Local knowledge']
     },
     {
       title: 'Hyper-Local Quality',
@@ -40,8 +40,8 @@ export default function About() {
   ]
 
   const expansionPlan = [
-    { phase: 'Phase 1', areas: ['Akshay Nagar', 'JP Nagar'], status: 'Active', icon: '✅' },
-    { phase: 'Phase 2', areas: ['Jaynagar', 'Banashankari'], status: 'Coming Soon', icon: '🔄' },
+    { phase: 'Phase 1', areas: ['Akshay Nagar', 'Other'], status: 'Active', icon: '✅' },
+    { phase: 'Phase 2', areas: ['Other', 'Banashankari'], status: 'Coming Soon', icon: '🔄' },
     { phase: 'Phase 3', areas: ['Bannerghatta', 'BTM Layout'], status: 'Planned', icon: '📋' },
   ]
 
@@ -79,7 +79,7 @@ export default function About() {
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-3xl leading-relaxed">
-              Stunn is Bangalore's hyper-local home service platform, currently serving <span className="font-semibold text-white">Akshay Nagar and JP Nagar</span>. 
+              Stunn is Bangalore's hyper-local home service platform, currently serving <span className="font-semibold text-white">Akshay Nagar and Other</span>. 
               We connect you with verified, background-checked professionals who understand your neighborhood's specific needs.
             </p>
  
@@ -188,7 +188,7 @@ export default function About() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Local Mission</h2>
               <p className="text-gray-700 leading-relaxed">
                 To become the most trusted home service provider in Bangalore by delivering exceptional quality 
-                in every neighborhood we serve, starting with Akshay Nagar and JP Nagar.
+                in every neighborhood we serve, starting with Akshay Nagar and Other.
               </p>
             </motion.div>
 
@@ -202,7 +202,7 @@ export default function About() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Hyper-Local Approach</h2>
               <p className="text-gray-700 leading-relaxed">
                 We believe in perfecting our service in select areas before expanding. This ensures 
-                every customer in Akshay Nagar and JP Nagar receives our best possible service.
+                every customer in Akshay Nagar and Other receives our best possible service.
               </p>
             </motion.div>
           </div>
@@ -273,7 +273,7 @@ export default function About() {
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-10 text-white">
             <h2 className="text-3xl font-bold mb-4">Book Service in Your Area</h2>
             <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-              Currently available in Akshay Nagar and JP Nagar, Bangalore
+              Currently available in Akshay Nagar and Other, Bangalore
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -293,11 +293,11 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               {
-                q: 'Do you service areas outside Akshay Nagar and JP Nagar?',
-                a: 'Currently, we only serve Akshay Nagar and JP Nagar in Bangalore. We\'re expanding soon to other areas. You can request your area using the form above.'
+                q: 'Do you service areas outside Akshay Nagar and Other?',
+                a: 'Currently, we only serve Akshay Nagar and Other in Bangalore. We\'re expanding soon to other areas. You can request your area using the form above.'
               },
               {
-                q: 'How quickly can I get service in Akshay Nagar/JP Nagar?',
+                q: 'How quickly can I get service in Akshay Nagar/Other?',
                 a: 'Most services offer same-day or next-day slots based on technician availability in your specific neighborhood.'
               },
               {

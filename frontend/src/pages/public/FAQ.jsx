@@ -14,13 +14,13 @@ export default function FAQ() {
         },
         {
           q: 'In which cities do you operate?',
-          a: 'Currently, we operate in Bangalore with plans to expand to more cities. We serve areas like Akshay Nagar, JP Nagar, and surrounding locations.'
+          a: 'Currently, we operate in Bangalore with plans to expand to more cities. We serve areas like Akshay Nagar, Other, and surrounding locations.'
         },
         {
           q: 'How do I know if a service is available in my area?',
           a: 'You can check service availability by entering your location during the booking process. Our system will show you available time slots and services for your area.'
         }
-      ]
+      ] 
     },
     {
       category: 'Booking & Payment',

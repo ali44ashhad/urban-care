@@ -15,10 +15,10 @@ export default function HelpCenter() {
       questions: [
         {
           q: 'How do I book a service?',
-          a: 'Browse our services, select the one you need, choose a time slot, provide your address in Akshay Nagar or JP Nagar, and confirm your booking. Our verified local professionals will arrive at your scheduled time.'
+          a: 'Browse our services, select the one you need, choose a time slot, provide your address in Akshay Nagar or Other, and confirm your booking. Our verified local professionals will arrive at your scheduled time.'
         },
         {
-          q: 'Do I need to create an account?',
+          q: 'Do I need to create an account?', 
           a: 'Yes, creating an account helps us track your bookings, manage warranties, and provide better localized service. You can sign up quickly with your email or phone number.'
         },
         {
@@ -129,7 +129,7 @@ export default function HelpCenter() {
 
             <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
               Get instant help, track your bookings, and find answers to all your questions about 
-              our services in <span className="font-semibold text-white">Akshay Nagar and JP Nagar</span>.
+              our services in <span className="font-semibold text-white">Akshay Nagar and Other</span>.
             </p>
  
           </motion.div>
@@ -217,7 +217,7 @@ export default function HelpCenter() {
             <h2 className="text-3xl font-bold mb-4">Still Need Help?</h2>
             <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
               Our local support team is available 24/7 to help with your queries about services in 
-              Akshay Nagar and JP Nagar.
+              Akshay Nagar and Other.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
