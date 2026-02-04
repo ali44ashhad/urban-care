@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const WarrantySchema = new Schema({
   bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', required: true },
-  clientId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  clientId: { type: Schema.Types.ObjectId, ref: 'User' }, // null if client deleted account
   providerId: { type: Schema.Types.ObjectId, ref: 'User' },
   assignedAgentId: { type: Schema.Types.ObjectId, ref: 'User' },
   issueDetails: String,

@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import authService from '../../services/auth.service'
 
 export default function ProviderProfile() {
-  const { user, setUser } = useAuthContext()
+  const navigate = useNavigate()
+  const { user, setUser, deleteAccount } = useAuthContext()
   const [editing, setEditing] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showDangerZone, setShowDangerZone] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -75,6 +80,21 @@ export default function ProviderProfile() {
       console.error('Update error:', err)
       const errorMsg = err.response?.data?.message || 'Failed to update profile'
       window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: errorMsg, type: 'error' } }))
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true)
+    try {
+      await deleteAccount()
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Account deleted. You can sign up again with the same phone or email.', type: 'success' } }))
+      navigate('/auth/register', { replace: true })
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to delete account'
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: msg, type: 'error' } }))
+    } finally {
+      setDeleting(false)
+      setShowDeleteConfirm(false)
     }
   }
 
@@ -238,8 +258,62 @@ export default function ProviderProfile() {
               <Button onClick={() => setEditing(true)}>Edit Profile</Button>
             )}
           </div>
+
+          {/* Delete account - hidden by default, expand to show */}
+          <div className="mt-10 pt-6 border-t border-gray-200">
+            {!showDangerZone ? (
+              <button
+                type="button"
+                onClick={() => setShowDangerZone(true)}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Account deletion options…
+              </button>
+            ) : (
+              <div className="border border-red-100 rounded-lg p-4 bg-red-50/50">
+                <h3 className="text-sm font-semibold text-red-800 mb-1">Danger zone</h3>
+                <p className="text-sm text-gray-600 mb-3">Permanently delete your provider account. You can sign up again with the same phone or email to create a new account.</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="border border-red-300 text-red-700 hover:bg-red-50 text-sm"
+                  >
+                    Delete my account
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setShowDangerZone(false)}
+                    className="text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    Hide
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => !deleting && setShowDeleteConfirm(false)}>
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-gray-900">Delete account?</h3>
+            <p className="mt-2 text-sm text-gray-600">
+              This will permanently delete your provider account and cannot be undone. Your past bookings will be kept but no longer linked to you. You can sign up again with the same phone or email to create a new account.
+            </p>
+            <div className="mt-6 flex gap-3 justify-end">
+              <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
+                Cancel
+              </Button>
+              <Button onClick={handleDeleteAccount} loading={deleting} className="bg-red-600 hover:bg-red-700">
+                Yes, delete my account
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

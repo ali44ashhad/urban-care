@@ -39,6 +39,10 @@ const bookingsService = {
 
   // admin actions
   assignProvider: (bookingId, providerId) => api.post(`/bookings/${bookingId}/assign`, { providerId }),
+
+  // extra services (provider adds at client site, client confirms)
+  addExtraService: (bookingId, payload) => api.post(`/bookings/${bookingId}/extra-services`, payload),
+  confirmExtraServices: (bookingId) => api.post(`/bookings/${bookingId}/extra-services/confirm`),
   
   // get bookings by provider
   getProviderBookings: (providerId, params = {}) => api.get('/bookings', { params: { ...params, providerId } }),

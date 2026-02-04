@@ -30,8 +30,8 @@ const AddressSchema = new Schema({
 }, { _id: false });
 
 const BookingSchema = new Schema({
-  clientId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  providerId: { type: Schema.Types.ObjectId, ref: 'User' }, // Service Agent assigned by admin
+  clientId: { type: Schema.Types.ObjectId, ref: 'User' }, // null if client deleted account
+  providerId: { type: Schema.Types.ObjectId, ref: 'User' }, // Service Agent assigned by admin; null if provider deleted
   serviceId: { type: Schema.Types.ObjectId, ref: 'Service', required: true },
   price: Number,
   slot: SlotSchema,
@@ -43,7 +43,15 @@ const BookingSchema = new Schema({
   paymentMethod: { type: String, enum: ['POD', 'ONLINE'], default: 'POD' },
   warrantySlip: { type: String }, // URL to uploaded warranty slip (uploaded by provider after completion)
   warrantyExpiresAt: { type: Date }, // 14 days from completion (set when status→completed)
-  completedAt: { type: Date } // Track completion timestamp
+  completedAt: { type: Date }, // Track completion timestamp
+  // Extra services added by provider at client site; client confirms → admin sees
+  extraServices: [{
+    serviceId: { type: Schema.Types.ObjectId, ref: 'Service' },
+    title: { type: String }, // denormalized for display
+    price: { type: Number },
+    status: { type: String, enum: ['pending', 'confirmed', 'rejected'], default: 'pending' },
+    addedAt: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 BookingSchema.index({ clientId: 1, status: 1 });

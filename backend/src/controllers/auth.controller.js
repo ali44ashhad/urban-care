@@ -465,6 +465,43 @@ async function getProfile(req, res) {
   }
 }
 
+// Permanently delete account (client or provider only). After deletion, same email/phone can sign up as new account.
+async function deleteAccount(req, res) {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const role = user.role;
+    if (role !== 'client' && role !== 'provider') {
+      return res.status(403).json({ message: 'Only clients and providers can delete their account from here.' });
+    }
+
+    const Booking = require('../models/booking.model');
+    const Review = require('../models/review.model');
+    const Warranty = require('../models/warranty.model');
+
+    if (role === 'client') {
+      await Booking.updateMany({ clientId: userId }, { $set: { clientId: null } });
+      await Review.updateMany({ clientId: userId }, { $set: { clientId: null } });
+      await Warranty.updateMany({ clientId: userId }, { $set: { clientId: null } });
+    } else {
+      await Booking.updateMany({ providerId: userId }, { $set: { providerId: null } });
+      await Review.updateMany({ providerId: userId }, { $set: { providerId: null } });
+      await Warranty.updateMany({ providerId: userId }, { $set: { providerId: null } });
+    }
+
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: 'Account permanently deleted. You can sign up again with the same phone or email to create a new account.' });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
 module.exports = { 
   register, 
   verifyRegistration,
@@ -475,6 +512,7 @@ module.exports = {
   updateProfile, 
   forgotPassword, 
   resetPassword, 
-  changePassword 
+  changePassword,
+  deleteAccount
 };
 

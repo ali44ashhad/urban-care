@@ -18,6 +18,7 @@ export default function BookingDetail() {
   const [reviewText, setReviewText] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [hasReviewed, setHasReviewed] = useState(false)
+  const [confirmingExtra, setConfirmingExtra] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -58,6 +59,21 @@ export default function BookingDetail() {
       window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Booking cancelled', type: 'info' } }))
       navigate('/client/bookings')
     } catch (err) { alert('Cancel failed') }
+  }
+
+  async function handleConfirmExtraServices() {
+    setConfirmingExtra(true)
+    try {
+      await bookingsService.confirmExtraServices(id)
+      const res = await bookingsService.get(id)
+      if (res.data) setBooking(res.data)
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Extra services confirmed. Admin has been notified.', type: 'success' } }))
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to confirm'
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: msg, type: 'error' } }))
+    } finally {
+      setConfirmingExtra(false)
+    }
   }
 
   async function handleReviewSubmit() {
@@ -275,6 +291,33 @@ export default function BookingDetail() {
                 </div>
               </div>
             </div>
+
+        {/* Extra services — provider added, client confirms */}
+        {(booking.extraServices && booking.extraServices.length > 0) && (
+          <div className="mb-6 p-4 rounded-xl border bg-blue-50 border-blue-200">
+            <h3 className="font-semibold mb-2 text-blue-900 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              Extra services
+            </h3>
+            <ul className="space-y-2 mb-3">
+              {booking.extraServices.map((ext, idx) => (
+                <li key={idx} className="flex justify-between text-sm">
+                  <span>{ext.title}</span>
+                  <span className="font-medium">₹{ext.price ?? 0}</span>
+                  {ext.status === 'pending' && <span className="text-amber-600 text-xs">(pending your confirm)</span>}
+                  {ext.status === 'confirmed' && <span className="text-green-600 text-xs">✓ Confirmed</span>}
+                </li>
+              ))}
+            </ul>
+            {(booking.extraServices || []).some(e => e.status === 'pending') && (
+              <Button onClick={handleConfirmExtraServices} loading={confirmingExtra}>
+                Confirm extra services
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Warranty Slip Display */}
         {booking.status === 'completed' && booking.warrantySlip && (

@@ -3,8 +3,8 @@ const { Schema } = mongoose;
 
 const ReviewSchema = new Schema({
   bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', required: true },
-  clientId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  providerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  clientId: { type: Schema.Types.ObjectId, ref: 'User' }, // null if client deleted account
+  providerId: { type: Schema.Types.ObjectId, ref: 'User' }, // null if provider deleted account
   rating: { type: Number, min: 1, max: 5 },
   title: String,
   comment: String,

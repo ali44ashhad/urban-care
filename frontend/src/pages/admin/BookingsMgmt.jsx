@@ -328,6 +328,16 @@ function formatDate(dateString) {
                     <div className="flex items-center gap-2 font-bold text-green-600 text-lg mt-2">
                       ₹{b.price || 0}
                     </div>
+                    {b.extraServices && b.extraServices.filter(e => e.status === 'confirmed').length > 0 && (
+                      <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-xs font-semibold text-amber-800 mb-1">Extra services (client confirmed)</p>
+                        <ul className="text-xs text-amber-900 space-y-0.5">
+                          {b.extraServices.filter(e => e.status === 'confirmed').map((ext, i) => (
+                            <li key={i}>{ext.title} — ₹{ext.price ?? 0}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
 

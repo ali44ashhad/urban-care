@@ -120,6 +120,15 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  // permanently delete account (client/provider only); then logout. Same email/phone can sign up as new account.
+  const deleteAccount = useCallback(async () => {
+    await authService.deleteAccount()
+    setAuthToken(null)
+    setUser(null)
+    localStorage.removeItem('user')
+    Cookies.remove('token')
+  }, [])
+
   // refresh token (optional — backend must support)
   const refresh = useCallback(async (refreshToken) => {
     const res = await authService.refresh(refreshToken)
@@ -149,6 +158,7 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      deleteAccount,
       refresh
     }}>
       {children}

@@ -18,6 +18,7 @@ const authService = {
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (payload) => api.put('/auth/profile', payload),
   changePassword: (payload) => api.post('/auth/change-password', payload),
+  deleteAccount: () => api.delete('/auth/account'),
   uploadAvatar: (file) => {
     const formData = new FormData();
     formData.append('avatar', file);

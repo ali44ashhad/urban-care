@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import bookingsService from '../../services/bookings.service'
+import servicesService from '../../services/services.service'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
-import { toast } from 'react-hot-toast'
 
 export default function BookingDetail() {
   const { id } = useParams()
@@ -17,6 +17,11 @@ export default function BookingDetail() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [cancelReason, setCancelReason] = useState('')
+  const [showAddExtraModal, setShowAddExtraModal] = useState(false)
+  const [servicesList, setServicesList] = useState([])
+  const [selectedExtraServiceId, setSelectedExtraServiceId] = useState('')
+  const [extraPrice, setExtraPrice] = useState('')
+  const [addingExtra, setAddingExtra] = useState(false)
 
   useEffect(() => {
     loadBooking()
@@ -149,6 +154,45 @@ function formatDate(dateString) {
       window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Failed to upload warranty slip', type: 'error' } }))
     } finally {
       setUploading(false)
+    }
+  }
+
+  async function loadServices() {
+    try {
+      const res = await servicesService.list({ limit: 100 })
+      const list = res.data?.items || []
+      setServicesList(Array.isArray(list) ? list : [])
+    } catch (err) {
+      console.error('Load services error:', err)
+      setServicesList([])
+    }
+  }
+
+  function openAddExtraModal() {
+    setSelectedExtraServiceId('')
+    setExtraPrice('')
+    loadServices()
+    setShowAddExtraModal(true)
+  }
+
+  async function handleAddExtraService() {
+    if (!selectedExtraServiceId) {
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Select a service', type: 'error' } }))
+      return
+    }
+    setAddingExtra(true)
+    try {
+      const payload = { serviceId: selectedExtraServiceId }
+      if (extraPrice !== '' && extraPrice !== null) payload.price = Number(extraPrice)
+      await bookingsService.addExtraService(id, payload)
+      await loadBooking()
+      setShowAddExtraModal(false)
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: 'Extra service added. Client will confirm.', type: 'success' } }))
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to add'
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { message: msg, type: 'error' } }))
+    } finally {
+      setAddingExtra(false)
     }
   }
 
@@ -298,6 +342,31 @@ function formatDate(dateString) {
           </div>
         </Card>
 
+        {/* Extra services — add when at client (accepted / in_progress) */}
+        {(canStart || canComplete) && (
+          <Card>
+            <h2 className="text-xl font-semibold mb-4">Extra services at client</h2>
+            <p className="text-sm text-gray-600 mb-3">If the client asks for additional work, add services here. Client will confirm and admin will see the final list.</p>
+            <div className="space-y-2 mb-4">
+              {(booking.extraServices || []).map((ext, idx) => (
+                <div key={idx} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-medium">{ext.title}</span>
+                  <span className="text-gray-600">₹{ext.price ?? 0}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded ${ext.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {ext.status}
+                  </span>
+                </div>
+              ))}
+              {(booking.extraServices || []).length === 0 && (
+                <p className="text-sm text-gray-500">No extra services added yet.</p>
+              )}
+            </div>
+            <Button variant="secondary" onClick={openAddExtraModal}>
+              + Add extra service
+            </Button>
+          </Card>
+        )}
+
         {/* Actions — Accept / Reject (pending), Start Job (accepted), Complete (in_progress), Cancel */}
         <Card>
           <h2 className="text-xl font-semibold mb-4">Actions</h2>
@@ -428,6 +497,48 @@ function formatDate(dateString) {
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add extra service modal */}
+      {showAddExtraModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Add extra service</h3>
+            <p className="text-sm text-gray-600 mb-4">Client will receive a request to confirm. Select service and optional price.</p>
+            <div className="space-y-3 mb-4">
+              <label className="block text-sm font-medium text-gray-700">Service</label>
+              <select
+                value={selectedExtraServiceId}
+                onChange={(e) => setSelectedExtraServiceId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select service</option>
+                {servicesList.map((s) => (
+                  <option key={s._id || s.id} value={s._id || s.id}>
+                    {s.title} {s.basePrice != null ? `(₹${s.basePrice})` : ''}
+                  </option>
+                ))}
+              </select>
+              <label className="block text-sm font-medium text-gray-700">Price (₹) — optional, uses service default if empty</label>
+              <input
+                type="number"
+                min="0"
+                value={extraPrice}
+                onChange={(e) => setExtraPrice(e.target.value)}
+                placeholder="Optional"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={handleAddExtraService} loading={addingExtra} disabled={!selectedExtraServiceId}>
+                Add
+              </Button>
+              <Button variant="secondary" onClick={() => setShowAddExtraModal(false)} disabled={addingExtra}>
+                Cancel
+              </Button>
             </div>
           </div>
         </div>

@@ -15,5 +15,7 @@ router.post('/:id/cancel', authMiddleware, bookings.cancelBooking);
 router.post('/:id/in_progress', authMiddleware, permit('provider'), bookings.markInProgress);
 router.post('/:id/complete', authMiddleware, permit('provider'), bookings.completeBooking);
 router.post('/:id/warranty-slip', authMiddleware, permit('provider'), uploadWarrantySlip, bookings.uploadWarrantySlip);
+router.post('/:id/extra-services', authMiddleware, permit('provider'), bookings.addExtraService);
+router.post('/:id/extra-services/confirm', authMiddleware, permit('client'), bookings.confirmExtraServices);
 
 module.exports = router;
