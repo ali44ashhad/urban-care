@@ -457,10 +457,94 @@ async function getProfile(req, res) {
       avatar: user.avatar,
       address: user.address,
       companyName: user.companyName,
+      savedAddresses: user.savedAddresses || [],
       createdAt: user.createdAt
     });
   } catch (err) {
     console.error('Get profile error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// List saved addresses (authenticated user)
+async function listAddresses(req, res) {
+  try {
+    const user = await User.findById(req.user._id).select('savedAddresses');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ items: user.savedAddresses || [] });
+  } catch (err) {
+    console.error('List addresses error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Add saved address (authenticated user)
+async function addAddress(req, res) {
+  try {
+    const { label, name, phone, line1, addressLine, city, state, pincode } = req.body;
+    const line = line1 || addressLine;
+    if (!line || !city || !state || !pincode) {
+      return res.status(400).json({ message: 'Address line, city, state and pincode are required' });
+    }
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user.savedAddresses) user.savedAddresses = [];
+    user.savedAddresses.push({
+      label: label || 'Home',
+      name: name || user.name,
+      phone: phone || user.phone,
+      line1: line,
+      city,
+      state,
+      pincode
+    });
+    await user.save();
+    const added = user.savedAddresses[user.savedAddresses.length - 1];
+    res.status(201).json(added);
+  } catch (err) {
+    console.error('Add address error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Update saved address (authenticated user)
+async function updateAddress(req, res) {
+  try {
+    const { id } = req.params;
+    const { label, name, phone, line1, addressLine, city, state, pincode } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const addr = user.savedAddresses?.id(id);
+    if (!addr) return res.status(404).json({ message: 'Address not found' });
+    if (label !== undefined) addr.label = label;
+    if (name !== undefined) addr.name = name;
+    if (phone !== undefined) addr.phone = phone;
+    if (line1 !== undefined) addr.line1 = line1;
+    if (addressLine !== undefined) addr.line1 = addressLine;
+    if (city !== undefined) addr.city = city;
+    if (state !== undefined) addr.state = state;
+    if (pincode !== undefined) addr.pincode = pincode;
+    await user.save();
+    res.json(addr);
+  } catch (err) {
+    console.error('Update address error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Delete saved address (authenticated user)
+async function deleteAddress(req, res) {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const addr = user.savedAddresses?.id(id);
+    if (!addr) return res.status(404).json({ message: 'Address not found' });
+    user.savedAddresses.pull(id);
+    await user.save();
+    res.json({ message: 'Address deleted' });
+  } catch (err) {
+    console.error('Delete address error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 }
@@ -513,6 +597,10 @@ module.exports = {
   forgotPassword, 
   resetPassword, 
   changePassword,
-  deleteAccount
+  deleteAccount,
+  listAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress
 };
 

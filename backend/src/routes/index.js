@@ -10,9 +10,11 @@ const reviewsRoutes = require('./reviews.routes');
 const warrantyRoutes = require('./warranty.routes');
 const notificationsRoutes = require('./notifications.routes');
 const categoryRoutes = require('./category.routes');
+const subcategoryRoutes = require('./subcategory.routes');
 
 // Mount routes
 router.use('/auth', authRoutes);
+router.use('/subcategories', subcategoryRoutes);
 router.use('/services', servicesRoutes);
 router.use('/bookings', bookingsRoutes);
 router.use('/admin', adminRoutes);

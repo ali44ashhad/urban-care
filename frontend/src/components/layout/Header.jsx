@@ -383,13 +383,36 @@ export default function Header() {
                 </Link>
 
                 {user && user.role === 'client' && (
-                  <Link
-                    to="/client/bookings"
-                    className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    My Bookings
-                  </Link>
+                  <>
+                    <Link
+                      to="/client/bookings"
+                      className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      My Bookings
+                    </Link>
+                    <Link
+                      to="/client/warranty"
+                      className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Warranty
+                    </Link>
+                    <Link
+                      to="/client/reviews"
+                      className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Reviews
+                    </Link>
+                    <Link
+                      to="/client/profile"
+                      className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                  </>
                 )}
               </>
             )}

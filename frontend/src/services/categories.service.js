@@ -11,6 +11,16 @@ const categoriesService = {
     return apiClient.get(`/categories/${id}`);
   },
 
+  // Get category by slug (public)
+  getBySlug: async (slug) => {
+    return apiClient.get(`/categories/by-slug/${encodeURIComponent(slug)}`);
+  },
+
+  // List sub-categories for a category by category slug
+  listSubcategories: async (categorySlug) => {
+    return apiClient.get(`/categories/by-slug/${encodeURIComponent(categorySlug)}/subcategories`);
+  },
+
   // Create new category (admin only)
   create: async (data) => {
     return apiClient.post('/categories', data);

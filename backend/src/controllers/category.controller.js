@@ -1,4 +1,5 @@
 const Category = require('../models/category.model');
+const SubCategory = require('../models/subcategory.model');
 
 // List all categories with optional filtering
 async function listCategories(req, res) {
@@ -52,6 +53,38 @@ async function getCategory(req, res) {
   } catch (err) {
     console.error('Get category error:', err);
     res.status(500).json({ message: 'Failed to fetch category', error: err.message });
+  }
+}
+
+// Get category by slug (public)
+async function getCategoryBySlug(req, res) {
+  try {
+    const { slug } = req.params;
+    const category = await Category.findOne({ slug, isActive: true });
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+    res.json(category);
+  } catch (err) {
+    console.error('Get category by slug error:', err);
+    res.status(500).json({ message: 'Failed to fetch category', error: err.message });
+  }
+}
+
+// List sub-categories for a category (by category slug)
+async function listSubcategoriesBySlug(req, res) {
+  try {
+    const { slug } = req.params;
+    const category = await Category.findOne({ slug, isActive: true });
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+    const subcategories = await SubCategory.find({ categoryId: category._id, isActive: true })
+      .sort({ order: 1, name: 1 });
+    res.json({ items: subcategories, category });
+  } catch (err) {
+    console.error('List subcategories error:', err);
+    res.status(500).json({ message: 'Failed to fetch subcategories', error: err.message });
   }
 }
 
@@ -185,6 +218,8 @@ async function deleteCategory(req, res) {
 module.exports = {
   listCategories,
   getCategory,
+  getCategoryBySlug,
+  listSubcategoriesBySlug,
   createCategory,
   updateCategory,
   deleteCategory

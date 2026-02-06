@@ -5,6 +5,7 @@ import Select from '../ui/Select'
 import Card from '../ui/Card'
 import servicesService from '../../services/services.service'
 import categoriesService from '../../services/categories.service'
+import subcategoriesService from '../../services/subcategories.service'
 
 /**
  * ServiceForm props:
@@ -21,15 +22,17 @@ export default function ServiceForm({ initial = null, onSaved = () => {}, onCanc
     title: '',
     description: '',
     category: '',
+    subCategoryId: '',
     basePrice: '',
     duration: '',
     image: '',
-    images: [], // Multiple images
+    images: [],
     variants: [{ name: 'Standard', priceModifier: 0 }],
     featured: false,
     isActive: true,
     ...initial
   })
+  const [subcategories, setSubcategories] = useState([])
 
   useEffect(() => {
     loadCategories()
@@ -48,6 +51,25 @@ export default function ServiceForm({ initial = null, onSaved = () => {}, onCanc
   }
 
   useEffect(() => { if (initial) setData(prev => ({ ...prev, ...initial })) }, [initial])
+
+  useEffect(() => {
+    if (!data.category) {
+      setSubcategories([])
+      setField('subCategoryId', '')
+      return
+    }
+    const cat = categories.find(c => c.name === data.category)
+    if (!cat?._id) {
+      setSubcategories([])
+      return
+    }
+    subcategoriesService.listByCategory(cat._id)
+      .then(res => {
+        const list = res.data?.items || []
+        setSubcategories(Array.isArray(list) ? list : [])
+      })
+      .catch(() => setSubcategories([]))
+  }, [data.category, categories])
 
   function setField(k, v) { setData(d => ({ ...d, [k]: v })) }
 
@@ -111,9 +133,11 @@ export default function ServiceForm({ initial = null, onSaved = () => {}, onCanc
 
     setSaving(true)
     try {
+      const payload = { ...data }
+      if (!payload.subCategoryId) delete payload.subCategoryId
       let res
-      if (initial && initial._id) res = await servicesService.update(initial._id, data)
-      else res = await servicesService.create(data)
+      if (initial && initial._id) res = await servicesService.update(initial._id, payload)
+      else res = await servicesService.create(payload)
       console.log('ServiceForm: API response:', res)
       console.log('ServiceForm: Calling onSaved with:', res.data)
       onSaved(res.data)
@@ -188,6 +212,21 @@ export default function ServiceForm({ initial = null, onSaved = () => {}, onCanc
               {categories.map((cat) => (
                 <option key={cat._id || cat.slug} value={cat.name}>
                   {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Sub-category (optional)</label>
+            <select
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={data.subCategoryId || ''}
+              onChange={(e) => setField('subCategoryId', e.target.value)}
+            >
+              <option value="">None</option>
+              {subcategories.map((sub) => (
+                <option key={sub._id} value={sub._id}>
+                  {sub.name}
                 </option>
               ))}
             </select>

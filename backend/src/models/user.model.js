@@ -60,6 +60,16 @@ const UserSchema = new Schema({
     state: String,
     pincode: String
   },
+  savedAddresses: [{
+    _id: { type: Schema.Types.ObjectId, auto: true },
+    label: { type: String, default: 'Home' },
+    name: String,
+    phone: String,
+    line1: String,
+    city: String,
+    state: String,
+    pincode: String
+  }],
   isActive: { type: Boolean, default: true },
   profile: { type: Schema.Types.Mixed },
   resetPasswordToken: { type: String },

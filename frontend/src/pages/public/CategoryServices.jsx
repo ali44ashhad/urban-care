@@ -10,7 +10,7 @@ import { useAuthContext } from '../../context/AuthContext';
 import { normalizeSlug, createSlug } from '../../utils/formatters';
 
 export default function CategoryServices() {
-  const { category: categoryParam } = useParams();
+  const { category: categoryParam, subCategory: subCategoryParam } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const [services, setServices] = useState([]);
@@ -19,6 +19,8 @@ export default function CategoryServices() {
   const [selectedService, setSelectedService] = useState(null);
   const [categoryName, setCategoryName] = useState('');
   const [categoryDetails, setCategoryDetails] = useState(null);
+  const [subcategories, setSubcategories] = useState([]);
+  const [subCategoryDetails, setSubCategoryDetails] = useState(null);
   const [allCategories, setAllCategories] = useState([]);
   const [serviceReviews, setServiceReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -27,20 +29,21 @@ export default function CategoryServices() {
 
   const PAGE_LIMIT = 20;
 
-  // Normalize the category slug from URL
   const category = normalizeSlug(categoryParam || '');
+  const subCategory = subCategoryParam ? normalizeSlug(subCategoryParam) : null;
 
-  // Redirect to clean URL if the normalized slug differs from the original parameter
   useEffect(() => {
     if (categoryParam && category && category !== categoryParam) {
-      // Only redirect if the normalized slug is different (handles URL-encoded slugs)
-      navigate(`/services/${category}`, { replace: true });
+      const path = subCategory ? `/services/${category}/${subCategory}` : `/services/${category}`;
+      navigate(path, { replace: true });
+    } else if (subCategoryParam && subCategory && subCategory !== subCategoryParam) {
+      navigate(`/services/${category}/${subCategory}`, { replace: true });
     }
-  }, [categoryParam, category, navigate]);
+  }, [categoryParam, subCategoryParam, category, subCategory, navigate]);
 
   useEffect(() => {
     loadCategoryAndServices();
-  }, [category]);
+  }, [category, subCategory]);
 
   useEffect(() => {
     if (selectedService) {
@@ -50,29 +53,34 @@ export default function CategoryServices() {
 
   async function loadCategoryAndServices() {
     setLoading(true);
+    setSubcategories([]);
+    setSubCategoryDetails(null);
     try {
-      // First, get the category name from database using slug
       const categoriesRes = await categoriesService.list();
       const categories = categoriesRes.data.items || categoriesRes.data || [];
       setAllCategories(categories);
-      
-      // Try to find category by exact slug match first, then by normalized slug
+
       let matchedCategory = categories.find(cat => cat.slug === category);
-      
-      // If not found, try matching with normalized slugs (handles old slugs with spaces/special chars)
       if (!matchedCategory) {
-        matchedCategory = categories.find(cat => {
-          const normalizedDbSlug = normalizeSlug(cat.slug);
-          return normalizedDbSlug === category;
-        });
+        matchedCategory = categories.find(cat => normalizeSlug(cat.slug) === category);
       }
-      
-      if (matchedCategory) {
-        setCategoryName(matchedCategory.name);
-        setCategoryDetails(matchedCategory);
-        // Now fetch services using the exact category name (first page)
+
+      if (!matchedCategory) {
+        console.warn('No category found for slug:', category);
+        setCategoryName(category);
+        setServices([]);
+        setLoading(false);
+        return;
+      }
+
+      setCategoryName(matchedCategory.name);
+      setCategoryDetails(matchedCategory);
+
+      if (subCategory) {
+        // Sub-category in URL: fetch services for this category + subcategory
         const res = await servicesService.list({
           category: matchedCategory.name,
+          subCategory,
           page: 1,
           limit: PAGE_LIMIT
         });
@@ -80,17 +88,39 @@ export default function CategoryServices() {
         setServices(servicesList);
         setPage(1);
         setHasMore(servicesList.length === PAGE_LIMIT);
-        
-        // Auto-select first service
-        if (servicesList.length > 0) {
-          setSelectedService(servicesList[0]);
-        }
+        setSelectedService(servicesList.length > 0 ? servicesList[0] : null);
+        const subRes = await categoriesService.listSubcategories(category);
+        const subs = subRes.data?.items || [];
+        setSubcategories(Array.isArray(subs) ? subs : []);
+        const currentSub = subs.find(s => (s.slug || '').toLowerCase() === subCategory.toLowerCase());
+        setSubCategoryDetails(currentSub || null);
       } else {
-        console.warn('No category found for slug:', category);
-        setCategoryName(category);
+        // No sub-category: fetch sub-categories for this category
+        const subRes = await categoriesService.listSubcategories(category);
+        const subs = subRes.data?.items || [];
+        const subList = Array.isArray(subs) ? subs : [];
+        setSubcategories(subList);
+
+        if (subList.length > 0) {
+          setServices([]);
+          setSelectedService(null);
+        } else {
+          // No sub-categories: show all services in category (backward compatible)
+          const res = await servicesService.list({
+            category: matchedCategory.name,
+            page: 1,
+            limit: PAGE_LIMIT
+          });
+          const servicesList = res.data?.items || res.data || [];
+          setServices(servicesList);
+          setPage(1);
+          setHasMore(servicesList.length === PAGE_LIMIT);
+          setSelectedService(servicesList.length > 0 ? servicesList[0] : null);
+        }
       }
     } catch (err) {
       console.error('Failed to load services:', err);
+      setServices([]);
     } finally {
       setLoading(false);
     }
@@ -101,11 +131,9 @@ export default function CategoryServices() {
     setLoadingMore(true);
     try {
       const nextPage = page + 1;
-      const res = await servicesService.list({
-        category: categoryDetails.name,
-        page: nextPage,
-        limit: PAGE_LIMIT
-      });
+      const params = { category: categoryDetails.name, page: nextPage, limit: PAGE_LIMIT };
+      if (subCategory) params.subCategory = subCategory;
+      const res = await servicesService.list(params);
       const newItems = res.data?.items || res.data || [];
       setServices(prev => [...prev, ...newItems]);
       setPage(nextPage);
@@ -203,6 +231,9 @@ export default function CategoryServices() {
     );
   }
 
+  const showSubcategoryGrid = subcategories.length > 0 && !subCategory;
+  const showServicesList = services.length > 0 || (subCategory && !loading);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Category Banner */}
@@ -214,14 +245,16 @@ export default function CategoryServices() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {categoryName || 'Services'}
+              {subCategoryDetails ? subCategoryDetails.name : (categoryName || 'Services')}
             </h1>
             <p className="text-lg md:text-xl text-blue-100 mb-2">
-              {categoryDetails?.description || 'Professional services at your doorstep'}
+              {subCategoryDetails ? `Services under ${categoryName}` : (categoryDetails?.description || 'Choose a sub-category or browse services')}
             </p>
-            <p className="text-blue-200">
-              {services.length} services available
-            </p>
+            {!showSubcategoryGrid && (
+              <p className="text-blue-200">
+                {services.length} services available
+              </p>
+            )}
           </motion.div>
         </div>
       </div>
@@ -246,24 +279,73 @@ export default function CategoryServices() {
               <svg className="w-5 h-5 text-green-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
                 <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
-              <span>14-day Warranty</span>
+              <span>Quality Assured</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content - 3 Column Layout */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {services.length === 0 ? (
+        {/* Sub-category grid: same layout & theme as main categories (ServiceCategories) */}
+        {showSubcategoryGrid && (
+          <section className="mb-10">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
+                What are you looking for?
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600">
+                Choose a sub-category to browse available services
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+              {subcategories.map((sub, idx) => (
+                <motion.div
+                  key={sub._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: idx * 0.08 }}
+                  onClick={() => navigate(`/services/${createSlug(category)}/${createSlug(sub.slug)}`)}
+                  className="group cursor-pointer"
+                >
+                  <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1">
+                    {/* Icon/Image - use parent category color & icon for same theme */}
+                    <div className={`h-32 sm:h-40 bg-gradient-to-br ${categoryDetails?.color || 'from-blue-500 to-cyan-500'} flex items-center justify-center relative overflow-hidden`}>
+                      <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+                      <span className="text-5xl sm:text-6xl filter drop-shadow-lg">
+                        {categoryDetails?.icon || '📋'}
+                      </span>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-3 sm:p-4">
+                      <h3 className="text-sm sm:text-base font-bold text-gray-800 mb-1 group-hover:text-blue-600 transition-colors">
+                        {sub.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 line-clamp-2">
+                        View services
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!showSubcategoryGrid && services.length === 0 && !loading ? (
           <div className="text-center py-12">
             <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
               <path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">No services found</h3>
-            <p className="text-gray-500 mb-4">Services in this category will be available soon.</p>
-            <Button onClick={() => navigate('/')}>Browse Other Categories</Button>
+            <p className="text-gray-500 mb-4">Services in this {subCategory ? 'sub-category' : 'category'} will be available soon.</p>
+            <Button onClick={() => navigate(subCategory ? `/services/${createSlug(category)}` : '/')}>
+              {subCategory ? 'Back to category' : 'Browse Other Categories'}
+            </Button>
           </div>
-        ) : (
+        ) : showServicesList ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* LEFT COLUMN - Other Categories & UC Promise (below on mobile only) */}
             <div className="lg:col-span-3 space-y-6 order-3 md:order-1">
@@ -589,7 +671,7 @@ export default function CategoryServices() {
               )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

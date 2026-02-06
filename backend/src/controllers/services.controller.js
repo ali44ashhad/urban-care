@@ -1,17 +1,31 @@
  const Service = require('../models/service.model');
+const Category = require('../models/category.model');
+const SubCategory = require('../models/subcategory.model');
 
-// List services (with text search & pagination)
+// List services (with text search, category, subCategory & pagination)
 async function listServices(req, res) {
-  const { q, category, page = 1, limit = 20 } = req.query;
+  const { q, category, subCategory: subCategorySlug, page = 1, limit = 20 } = req.query;
   const filter = { isActive: true };
   if (q) filter.$text = { $search: q };
   if (category) {
-    // Support both exact match and fuzzy match for category
-    filter.category = new RegExp(category, 'i');
+    // When subCategory slug is provided, filter by subCategoryId
+    if (subCategorySlug) {
+      const cat = await Category.findOne({ $or: [{ name: new RegExp(category, 'i') }, { slug: category }] });
+      if (cat) {
+        const sub = await SubCategory.findOne({ categoryId: cat._id, slug: subCategorySlug, isActive: true });
+        if (sub) filter.subCategoryId = sub._id;
+        else return res.json({ items: [], page: Number(page) });
+      } else {
+        filter.category = new RegExp(category, 'i');
+      }
+    } else {
+      // Support both exact match and fuzzy match for category
+      filter.category = new RegExp(category, 'i');
+    }
   }
   const skip = (page - 1) * limit;
   const items = await Service.find(filter)
-    .sort({ createdAt: -1 }) // Sort by newest first
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(Number(limit));
   res.json({ items, page: Number(page) });

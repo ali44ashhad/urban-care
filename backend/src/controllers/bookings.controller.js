@@ -1,6 +1,7 @@
  const Booking = require('../models/booking.model');
 const Service = require('../models/service.model');
 const Notification = require('../models/notification.model');
+const User = require('../models/user.model');
 const BookingService = require('../services/booking.service');
 
 // client creates booking
@@ -31,6 +32,17 @@ async function createBooking(req, res) {
     channel: 'email',
     payload: { bookingId: booking._id, message: 'Booking request submitted successfully' }
   });
+
+  // Notify all admins – new booking request (assign provider)
+  const admins = await User.find({ role: 'admin' }).select('_id');
+  for (const admin of admins) {
+    await Notification.create({
+      toUserId: admin._id,
+      type: 'new_booking_request',
+      channel: 'email',
+      payload: { bookingId: booking._id, message: 'New booking request. Please assign a provider.' }
+    });
+  }
 
   res.status(201).json(booking);
 }

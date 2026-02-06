@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import categoriesService from '../../services/categories.service';
+import subcategoriesService from '../../services/subcategories.service';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
@@ -9,6 +10,11 @@ export default function CategoryMgmt() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [expandedSubCategoryId, setExpandedSubCategoryId] = useState(null);
+  const [subcategoriesByCategory, setSubcategoriesByCategory] = useState({});
+  const [newSubName, setNewSubName] = useState('');
+  const [newSubSlug, setNewSubSlug] = useState('');
+  const [addingSub, setAddingSub] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -125,6 +131,52 @@ export default function CategoryMgmt() {
       isActive: true,
       order: 0
     });
+  };
+
+  const loadSubcategories = async (categoryId) => {
+    try {
+      const res = await subcategoriesService.listByCategory(categoryId);
+      const list = res.data?.items || [];
+      setSubcategoriesByCategory(prev => ({ ...prev, [categoryId]: list }));
+    } catch (err) {
+      console.error('Load subcategories failed:', err);
+      setSubcategoriesByCategory(prev => ({ ...prev, [categoryId]: [] }));
+    }
+  };
+
+  const toggleSubcategories = (categoryId) => {
+    if (expandedSubCategoryId === categoryId) {
+      setExpandedSubCategoryId(null);
+      return;
+    }
+    setExpandedSubCategoryId(categoryId);
+    if (!subcategoriesByCategory[categoryId]) loadSubcategories(categoryId);
+  };
+
+  const handleAddSubcategory = async (categoryId, e) => {
+    e.preventDefault();
+    if (!newSubName.trim()) return;
+    setAddingSub(true);
+    try {
+      await subcategoriesService.create({ categoryId, name: newSubName.trim(), slug: newSubSlug.trim() || undefined });
+      setNewSubName('');
+      setNewSubSlug('');
+      loadSubcategories(categoryId);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add sub-category');
+    } finally {
+      setAddingSub(false);
+    }
+  };
+
+  const handleDeleteSubcategory = async (subId, categoryId) => {
+    if (!window.confirm('Delete this sub-category? Services under it will have no sub-category.')) return;
+    try {
+      await subcategoriesService.delete(subId);
+      loadSubcategories(categoryId);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete');
+    }
   };
 
   return (
@@ -310,7 +362,56 @@ export default function CategoryMgmt() {
                 <span className={`px-2 py-1 rounded ${category.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                   {category.isActive ? 'Active' : 'Inactive'}
                 </span>
-                {/* <span className="text-gray-500">Order: {category.order}</span> */}
+              </div>
+
+              {/* Sub-categories */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => toggleSubcategories(category._id)}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  {expandedSubCategoryId === category._id ? '▼' : '▶'} Sub-categories
+                  {(subcategoriesByCategory[category._id]?.length ?? 0) > 0 && (
+                    <span className="ml-1 text-gray-500">({subcategoriesByCategory[category._id].length})</span>
+                  )}
+                </button>
+                {expandedSubCategoryId === category._id && (
+                  <div className="mt-3 space-y-2">
+                    {(subcategoriesByCategory[category._id] || []).map(sub => (
+                      <div key={sub._id} className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded text-sm">
+                        <span className="font-medium">{sub.name}</span>
+                        <span className="text-gray-500 text-xs">{sub.slug}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSubcategory(sub._id, category._id)}
+                          className="text-red-600 hover:text-red-800 text-xs"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))}
+                    <form onSubmit={(e) => handleAddSubcategory(category._id, e)} className="flex flex-wrap gap-2 mt-2">
+                      <input
+                        type="text"
+                        value={newSubName}
+                        onChange={(e) => setNewSubName(e.target.value)}
+                        placeholder="Sub-category name (e.g. Gas Filling)"
+                        className="flex-1 min-w-[120px] px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      />
+                      <input
+                        type="text"
+                        value={newSubSlug}
+                        onChange={(e) => setNewSubSlug(e.target.value)}
+                        placeholder="slug (optional)"
+                        className="w-24 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      />
+                      <Button type="submit" disabled={addingSub || !newSubName.trim()} size="sm">
+                        {addingSub ? 'Adding...' : 'Add'}
+                      </Button>
+                    </form>
+                  </div>
+                )}
               </div>
             </div>
           ))}

@@ -14,6 +14,7 @@ const ServiceSchema = new Schema({
   pricingOptions: [PricingOption],
   durationMin: Number,
   category: String,
+  subCategoryId: { type: Schema.Types.ObjectId, ref: 'SubCategory' },
   image: String,
   images: [String],
   rating: { type: Number, default: 0, min: 0, max: 5 },

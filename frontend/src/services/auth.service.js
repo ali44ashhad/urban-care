@@ -19,6 +19,10 @@ const authService = {
   updateProfile: (payload) => api.put('/auth/profile', payload),
   changePassword: (payload) => api.post('/auth/change-password', payload),
   deleteAccount: () => api.delete('/auth/account'),
+  getAddresses: () => api.get('/auth/addresses'),
+  addAddress: (payload) => api.post('/auth/addresses', payload),
+  updateAddress: (id, payload) => api.put(`/auth/addresses/${id}`, payload),
+  deleteAddress: (id) => api.delete(`/auth/addresses/${id}`),
   uploadAvatar: (file) => {
     const formData = new FormData();
     formData.append('avatar', file);

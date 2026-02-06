@@ -42,6 +42,9 @@ const morgan = require('morgan');
 const path = require('path');
 const mongoose = require('mongoose');
 
+const swaggerUi = require('swagger-ui-express');
+const openApiSpec = require('./docs/openapi');
+
 const { connectDB } = require('./config/db');
 const config = require('./config');
 const routes = require('./routes');
@@ -73,6 +76,14 @@ app.use(async (req, res, next) => {
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// API documentation (Swagger UI)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec)); 
+
+app.get('/api-docs-json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).json(openApiSpec);
+});
 
 // mount routes
 app.use('/api/v1', routes);

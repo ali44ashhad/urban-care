@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, verifyRegistration, login, verifyLogin, resendOTP, getProfile, updateProfile, forgotPassword, resetPassword, changePassword, deleteAccount } = require('../controllers/auth.controller');
+const { register, verifyRegistration, login, verifyLogin, resendOTP, getProfile, updateProfile, forgotPassword, resetPassword, changePassword, deleteAccount, listAddresses, addAddress, updateAddress, deleteAddress } = require('../controllers/auth.controller');
 const { authMiddleware } = require('../middlewares/auth.middleware');
 const { uploadAvatar } = require('../middlewares/upload.middleware');
 const { uploadFromBuffer, isConfigured } = require('../utils/cloudinary');
@@ -16,6 +16,10 @@ router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, updateProfile);
 router.post('/change-password', authMiddleware, changePassword);
 router.delete('/account', authMiddleware, deleteAccount);
+router.get('/addresses', authMiddleware, listAddresses);
+router.post('/addresses', authMiddleware, addAddress);
+router.put('/addresses/:id', authMiddleware, updateAddress);
+router.delete('/addresses/:id', authMiddleware, deleteAddress);
 router.post('/upload-avatar', authMiddleware, uploadAvatar, async (req, res) => {
   try {
     if (!req.file) {

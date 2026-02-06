@@ -6,6 +6,8 @@ const { requireAdmin } = require('../middlewares/role.middleware');
 
 // Public routes - anyone can view categories
 router.get('/', categoryController.listCategories);
+router.get('/by-slug/:slug', categoryController.getCategoryBySlug);
+router.get('/by-slug/:slug/subcategories', categoryController.listSubcategoriesBySlug);
 router.get('/:id', categoryController.getCategory);
 
 // Admin-only routes

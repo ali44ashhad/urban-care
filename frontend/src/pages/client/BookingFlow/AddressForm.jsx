@@ -6,6 +6,7 @@ import Button from '../../../components/ui/Button'
 import { readDraft, writeDraft } from './bookingStore'
 import { useAuthContext } from '../../../context/AuthContext'
 import bookingsService from '../../../services/bookings.service'
+import authService from '../../../services/auth.service'
 
 export default function AddressForm() {
   const navigate = useNavigate()
@@ -29,82 +30,127 @@ export default function AddressForm() {
   
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [loadingAddresses, setLoadingAddresses] = useState(true)
 
-  // Get cart items
   const cartItems = draft.items || (draft.service ? [{ service: draft.service }] : [])
 
-  useEffect(() => {
-    loadSavedAddresses()
-  }, [])
-
-  function loadSavedAddresses() {
-    try {
-      const userId = user?._id || user?.id || 'guest'
-      const key = `savedAddresses_${userId}`
-      const saved = localStorage.getItem(key)
-      if (saved) {
-        const addresses = JSON.parse(saved)
-        setSavedAddresses(addresses)
-        
-        // Auto-select first address if available
-        if (addresses.length > 0 && !selectedAddressId) {
-          setSelectedAddressId(addresses[0].id)
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load addresses:', err)
+  // Normalize API address to form shape (id, addressLine for display)
+  function toFormAddress(addr) {
+    const id = addr._id || addr.id
+    return {
+      id: typeof id === 'string' ? id : id?.toString(),
+      _id: addr._id,
+      name: addr.name,
+      phone: addr.phone,
+      addressLine: addr.line1 || addr.addressLine,
+      city: addr.city,
+      state: addr.state,
+      pincode: addr.pincode,
+      label: addr.label || 'Home'
     }
   }
 
-  function saveAddressToStorage(address) {
+  useEffect(() => {
+    loadSavedAddresses()
+  }, [user?._id || user?.id])
+
+  async function loadSavedAddresses() {
+    if (!user?._id && !user?.id) {
+      setLoadingAddresses(false)
+      return []
+    }
+    setLoadingAddresses(true)
     try {
-      const userId = user?._id || user?.id || 'guest'
-      const key = `savedAddresses_${userId}`
-      
-      const newAddress = {
-        id: editingAddressId || Date.now().toString(),
-        ...address,
-        createdAt: new Date().toISOString()
+      const res = await authService.getAddresses()
+      const items = res.data?.items || res.data || []
+      const list = (Array.isArray(items) ? items : []).map(toFormAddress)
+      setSavedAddresses(list)
+      if (list.length > 0 && !selectedAddressId) {
+        setSelectedAddressId(list[0].id)
       }
-      
-      let addresses = [...savedAddresses]
-      
+      const storageKey = `savedAddresses_${user._id || user.id}`
+      const fromStorage = localStorage.getItem(storageKey)
+      if (fromStorage && list.length === 0) {
+        try {
+          const parsed = JSON.parse(fromStorage)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            for (const a of parsed) {
+              await authService.addAddress({
+                label: a.label || 'Home',
+                name: a.name,
+                phone: a.phone,
+                line1: a.addressLine || a.line1,
+                city: a.city,
+                state: a.state,
+                pincode: a.pincode
+              })
+            }
+            localStorage.removeItem(storageKey)
+            const again = await authService.getAddresses()
+            const items2 = again.data?.items || again.data || []
+            const list2 = (Array.isArray(items2) ? items2 : []).map(toFormAddress)
+            setSavedAddresses(list2)
+            if (list2.length > 0) setSelectedAddressId(list2[0].id)
+            return list2
+          }
+        } catch (e) {
+          console.warn('Address migration from storage failed', e)
+        }
+      }
+      return list
+    } catch (err) {
+      console.error('Failed to load addresses:', err)
+      setSavedAddresses([])
+      return []
+    } finally {
+      setLoadingAddresses(false)
+    }
+  }
+
+  async function saveAddressToStorage(address) {
+    if (!user?._id && !user?.id) {
+      setError('Please login to save address')
+      return
+    }
+    try {
+      const payload = {
+        label: address.label || 'Home',
+        name: address.name,
+        phone: address.phone,
+        line1: address.addressLine,
+        city: address.city,
+        state: address.state,
+        pincode: address.pincode
+      }
       if (editingAddressId) {
-        // Update existing
-        addresses = addresses.map(a => a.id === editingAddressId ? newAddress : a)
+        await authService.updateAddress(editingAddressId, payload)
       } else {
-        // Add new
-        addresses.push(newAddress)
+        const res = await authService.addAddress(payload)
+        const added = res.data
+        if (added?._id) setSelectedAddressId(added._id.toString())
       }
-      
-      localStorage.setItem(key, JSON.stringify(addresses))
-      setSavedAddresses(addresses)
-      setSelectedAddressId(newAddress.id)
+      await loadSavedAddresses()
       setShowAddForm(false)
       setEditingAddressId(null)
       resetForm()
     } catch (err) {
       console.error('Failed to save address:', err)
-      setError('Failed to save address')
+      setError(err.response?.data?.message || 'Failed to save address')
     }
   }
 
-  function deleteAddress(addressId) {
+  async function deleteAddress(addressId) {
     if (!confirm('Delete this address?')) return
-    
+    if (!user?._id && !user?.id) return
     try {
-      const userId = user?._id || user?.id || 'guest'
-      const key = `savedAddresses_${userId}`
-      
-      const addresses = savedAddresses.filter(a => a.id !== addressId)
-      localStorage.setItem(key, JSON.stringify(addresses))
-      setSavedAddresses(addresses)
-      
+      await authService.deleteAddress(addressId)
+      const list = await loadSavedAddresses()
       if (selectedAddressId === addressId) {
-        setSelectedAddressId(addresses[0]?.id || null)
+        setSelectedAddressId(list[0]?.id || null)
       }
     } catch (err) {
       console.error('Failed to delete address:', err)
+      setError(err.response?.data?.message || 'Failed to delete')
     }
   }
 
@@ -228,7 +274,12 @@ export default function AddressForm() {
           {/* Left - Address Selection */}
           <div className="lg:col-span-2 space-y-6">
             {/* Saved Addresses */}
-            {savedAddresses.length > 0 && !showAddForm && (
+            {loadingAddresses && (
+              <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                <p className="text-gray-500">Loading your saved addresses...</p>
+              </div>
+            )}
+            {!loadingAddresses && savedAddresses.length > 0 && !showAddForm && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -357,8 +408,8 @@ export default function AddressForm() {
     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
   >
     <option value="">Select City</option>
-    <option value="Other">Other Locations</option>
     <option value="Akshay Nagar">Akshay Nagar</option>
+    <option value="Other">Other Locations</option>
   </select>
 </div>
 

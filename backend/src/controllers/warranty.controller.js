@@ -1,6 +1,8 @@
  // src/controllers/warranty.controller.js
 const Warranty = require('../models/warranty.model');
 const Booking = require('../models/booking.model');
+const User = require('../models/user.model');
+const Notification = require('../models/notification.model');
 const NotificationService = require('../services/notification.service');
 
 async function createWarranty(req, res) {
@@ -47,13 +49,24 @@ async function createWarranty(req, res) {
   booking.warrantyRequests.push(w._id);
   await booking.save();
 
-  // notify provider + admin (don't await to avoid blocking)
+  // Notify provider
   NotificationService.enqueue({
     toUserId: booking.providerId,
     type: 'warranty_request',
     channel: 'email',
     payload: { warrantyId: w._id, bookingId, message: 'New warranty request' }
   }).catch(err => console.error('Notification error:', err));
+
+  // Notify all admins – new warranty claim (review/assign)
+  const admins = await User.find({ role: 'admin' }).select('_id');
+  for (const admin of admins) {
+    await Notification.create({
+      toUserId: admin._id,
+      type: 'new_warranty_request',
+      channel: 'email',
+      payload: { warrantyId: w._id, bookingId, message: 'New warranty claim. Please review and assign.' }
+    });
+  }
 
   res.status(201).json(w);
 }
