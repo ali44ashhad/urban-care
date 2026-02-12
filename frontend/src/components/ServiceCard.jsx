@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useAuthContext } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
-function ServiceCardComponent({ service, onSelect, onBook, isSelected = false }) {
+function ServiceCardComponent({ service, onSelect, onBook, isSelected = false, hideViewButton = false }) {
   const { user } = useAuthContext()
   const navigate = useNavigate()
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -171,35 +171,60 @@ function ServiceCardComponent({ service, onSelect, onBook, isSelected = false })
           </div>
         </div>
 
-        {/* CTA Button - Hide for admin users */}
+        {/* CTAs */}
         {user?.role !== 'admin' && (
-          <button
-            onClick={() => {
-              if (!user) {
-                window.dispatchEvent(new CustomEvent('app:toast', {
-                  detail: { message: 'Please login to add service to cart', type: 'warning' }
-                }))
-                navigate('/auth/login', { state: { from: window.location.pathname } })
-                return
-              }
-              if (onSelect) onSelect(service);
-              if (onBook) onBook(service);
-            }}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-95 text-white py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 text-sm sm:text-base min-h-[44px]"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex flex-col gap-2">
+            {/* View Service (optional) */}
+            {!hideViewButton && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSelect) onSelect(service);
+                }}
+                className="w-full border border-gray-300 hover:border-gray-400 text-gray-700 bg-white hover:bg-gray-50 active:scale-95 py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 text-sm sm:text-base min-h-[44px]"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                  <span>View Service</span>
+              </button>
+            )}
+
+            {/* Add to Cart */}
+            <button
+              type="button"
+              onClick={() => {
+                if (!user) {
+                  window.dispatchEvent(new CustomEvent('app:toast', {
+                    detail: { message: 'Please login to add service to cart', type: 'warning' }
+                  }))
+                  navigate('/auth/login', { state: { from: window.location.pathname } })
+                  return
+                }
+                if (onBook) onBook(service);
+              }}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-95 text-white py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 text-sm sm:text-base min-h-[44px]"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span>{isSelected ? "Added to Cart" : "Add to Cart"}</span>
-          </button>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span>{isSelected ? "Added to Cart" : "Add to Cart"}</span>
+            </button>
+          </div>
         )}
         
-        {/* View Details for admin */}
+        {/* View Details for admin (kept as before) */}
         {user?.role === 'admin' && (
           <button
             onClick={() => {

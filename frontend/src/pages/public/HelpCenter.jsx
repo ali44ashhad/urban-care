@@ -257,10 +257,10 @@ export default function HelpCenter() {
                   </p>
                   <div className="flex items-center gap-4">
                     <a
-                      href="tel:+919876543210"
+                      href="tel:+916366152660"
                       className="text-lg font-bold text-red-600 hover:text-red-700"
                     >
-                      📞 +91 98765 43210
+                      📞 +91 63661 52660
                     </a>
                     <span className="text-sm text-gray-600">Available 24/7</span>
                   </div>

@@ -63,7 +63,7 @@ export default function Cancellation() {
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Your account dashboard under "My Bookings"</li>
                   <li>Email to support@stunn.com with your booking reference number</li>
-                  <li>Phone support (available during business hours)</li>
+                  <li>Phone support (available during business hours) <span className="font-bold">+91 63661 52660</span></li>
                 </ul>
               </section>
 

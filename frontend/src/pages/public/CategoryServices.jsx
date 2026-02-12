@@ -309,7 +309,7 @@ export default function CategoryServices() {
                   onClick={() => navigate(`/services/${createSlug(category)}/${createSlug(sub.slug)}`)}
                   className="group cursor-pointer"
                 >
-                  <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="bg-white rounded-lg shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1">
                     {/* Icon/Image - use parent category color & icon for same theme */}
                     <div className={`h-32 sm:h-40 bg-gradient-to-br ${categoryDetails?.color || 'from-blue-500 to-cyan-500'} flex items-center justify-center relative overflow-hidden`}>
                       <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />

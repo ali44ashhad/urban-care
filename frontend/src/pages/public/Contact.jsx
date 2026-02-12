@@ -55,7 +55,7 @@ export default function Contact() {
         </svg>
       ),
       title: 'Phone',
-      details: ['+91 98765 43210', 'Customer Support: +91 87654 32109'],
+      details: ['+91 63661 52660', 'Customer Support: +91 63661 52660'],
       color: 'from-purple-500 to-pink-500'
     },
     {
@@ -89,7 +89,7 @@ export default function Contact() {
     
     {
       q: 'Do you offer emergency services?',
-      a: 'Yes! For urgent plumbing or electrical issues, call our emergency line at +91 98765 43210.'
+      a: 'Yes! For urgent plumbing or electrical issues, call our emergency line at +91 63661 52660.'
     },
     {
       q: 'What are your business hours?',
@@ -217,7 +217,7 @@ export default function Contact() {
                   value={form.phone}
                   onChange={(e) => setField('phone', e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder="+91 98765 43210"
+                  placeholder="+91 63661 52660"
                 />
               </div>
 
@@ -307,7 +307,7 @@ export default function Contact() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
-                    <span>Call: +91 98765 43210</span>
+                    <span>Call: +91 63661 52660</span>
                   </div>
                 </div>
               </div>
@@ -380,10 +380,10 @@ export default function Contact() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 variant="secondary"
-                onClick={() => window.location.href = 'tel:+919876543210'}
+                onClick={() => window.location.href = 'tel:+916366152660'}
                 className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg rounded-2xl"
               >
-                Call Now: +91 98765 43210
+                Call Now: <span className="font-bold">+91 63661 52660</span>
               </Button>
                
             </div>

@@ -5,6 +5,7 @@ import ServiceCategories from '../../components/ServiceCategories'
 import ServiceDetailModal from '../../components/ServiceDetailModal'
 import ServiceCard from '../../components/ServiceCard'
 import Button from '../../components/ui/Button'
+import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import servicesService from '../../services/services.service'
 
@@ -60,7 +61,8 @@ export default function Landing() {
               <p className="text-sm sm:text-base text-gray-600 max-w-2xl">Book verified technicians for AC, plumbing, electrical, cleaning and salon services — fast, reliable and with warranty.</p>
             </div>
             <div className="w-full sm:w-auto">
-              <Button onClick={() => navigate('/auth/register')} className="w-full sm:w-auto">Get started</Button>
+              <Link to='/services' className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-4 py-2 text-lg rounded-2xl text-white"> Get started 
+              </Link>
             </div>
           </div>
         </section>

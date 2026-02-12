@@ -309,11 +309,11 @@ export default function Warranty() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="tel:+919876543210"
+                href="tel:+916366152660"
                 className="inline-flex items-center gap-3 bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg rounded-2xl font-semibold"
               >
                 📞 Call Support
-                <span className="font-bold">+91 98765 43210</span>
+                <span className="font-bold">+91 63661 52660</span>
               </a>
               <Button
                 variant="third"

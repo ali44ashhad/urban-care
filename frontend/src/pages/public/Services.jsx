@@ -11,42 +11,48 @@ export default function Services() {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+
+  const PAGE_LIMIT = 20
   const { user } = useAuthContext()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    let mounted = true
-    async function load() {
-      setLoading(true)
-      try {
-        const res = await servicesService.list()
-        // Handle both array and object responses
-        let serviceData = res.data || []
-        if (!Array.isArray(serviceData)) {
-          serviceData = serviceData.items || serviceData.services || serviceData.data || []
-        }
-        if (!Array.isArray(serviceData)) {
-          serviceData = []
-        }
-        if (mounted) setServices(serviceData)
-      } catch (err) {
-        console.error(err)
-        if (mounted) {
-          setError('Unable to load services')
-          setServices([])
-        }
-      } finally { if (mounted) setLoading(false) }
+  const fetchServices = useCallback(async (pageToLoad = 1) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await servicesService.list({ page: pageToLoad, limit: PAGE_LIMIT })
+      // Handle both array and object responses
+      let serviceData = res.data || []
+      if (!Array.isArray(serviceData)) {
+        serviceData = serviceData.items || serviceData.services || serviceData.data || []
+      }
+      if (!Array.isArray(serviceData)) {
+        serviceData = []
+      }
+      setServices(serviceData)
+      setPage(pageToLoad)
+      setHasMore(serviceData.length === PAGE_LIMIT)
+    } catch (err) {
+      console.error(err)
+      setError('Unable to load services')
+      setServices([])
+      setHasMore(false)
+    } finally {
+      setLoading(false)
     }
-    load()
-    return () => mounted = false
   }, [])
+
+  useEffect(() => {
+    fetchServices(1)
+  }, [fetchServices])
 
   const openBooking = useCallback((service) => {
     if (!user) {
       navigate('/auth/login', { state: { from: '/services' } })
       return
     }
-    setSelectedService(service)
     // set draft for booking flow and navigate to pick service
     sessionStorage.setItem('bookingDraft', JSON.stringify({ service }))
     navigate('/client/booking/pick')
@@ -59,30 +65,38 @@ export default function Services() {
     }
 
     try {
-      // Fetch categories to get the slug
+      // Fetch categories to get the category slug
       const res = await categoriesService.list()
       const categories = res.data?.items || res.data || []
       const matchedCategory = categories.find(cat => 
         cat.name === service.category || cat.name?.toLowerCase() === service.category?.toLowerCase()
       )
       
-      if (matchedCategory?.slug) {
-        // Navigate to the category page with sanitized slug
-        const sanitizedSlug = createSlug(matchedCategory.slug)
-        navigate(`/services/${sanitizedSlug}`)
-      } else {
-        console.warn('Category slug not found for:', service.category)
-        // Fallback: try to create a slug from category name
-        const slug = createSlug(service.category)
-        navigate(`/services/${slug}`)
-      }
+      const categorySlug = matchedCategory?.slug
+        ? createSlug(matchedCategory.slug)
+        : createSlug(service.category)
+
+      // Use service.slug (or title) as sub-category segment
+      const subSlug = createSlug(service.slug || service.title || '')
+
+      navigate(`/services/${categorySlug}/${subSlug}`)
     } catch (err) {
       console.error('Failed to load category:', err)
-      // Fallback: try to create a slug from category name
-      const slug = createSlug(service.category)
-      navigate(`/services/${slug}`)
+      const categorySlug = createSlug(service.category)
+      const subSlug = createSlug(service.slug || service.title || '')
+      navigate(`/services/${categorySlug}/${subSlug}`)
     }
   }, [navigate])
+
+  const handleNextPage = () => {
+    if (loading || !hasMore) return
+    fetchServices(page + 1)
+  }
+
+  const handlePrevPage = () => {
+    if (loading || page <= 1) return
+    fetchServices(page - 1)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -127,7 +141,47 @@ export default function Services() {
             <p className="text-gray-600 text-lg">No services available at the moment.</p>
           </div>
         ) : (
-          <ServiceList services={services} onBook={openBooking} onSelect={handleViewDetails} />
+          <>
+            <ServiceList
+              services={services}
+              onBook={openBooking}
+              onSelect={handleViewDetails}
+              hideViewButton
+            />
+
+            {/* Pagination controls */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handlePrevPage}
+                disabled={loading || page <= 1}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+                  page <= 1 || loading
+                    ? 'text-gray-400 border-gray-200 cursor-not-allowed'
+                    : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                Previous
+              </button>
+
+              <div className="text-sm text-gray-600">
+                Page <span className="font-semibold">{page}</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleNextPage}
+                disabled={loading || !hasMore}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+                  !hasMore || loading
+                    ? 'text-gray-400 border-gray-200 cursor-not-allowed'
+                    : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>

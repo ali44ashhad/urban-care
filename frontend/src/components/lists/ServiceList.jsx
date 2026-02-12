@@ -1,7 +1,13 @@
 import React from 'react'
 import ServiceCard from '../ServiceCard'
 
-export default function ServiceList({ services = [], onSelect = ()=>{}, onBook = ()=>{}, selectedServiceId = null }) {
+export default function ServiceList({
+  services = [],
+  onSelect = () => {},
+  onBook = () => {},
+  selectedServiceId = null,
+  hideViewButton = false
+}) {
   console.log('ServiceList rendering with:', services.length, 'services')
   console.log('Services data:', services)
   
@@ -17,6 +23,7 @@ export default function ServiceList({ services = [], onSelect = ()=>{}, onBook =
           onSelect={() => onSelect(s)}
           onBook={() => onBook(s)}
           isSelected={selectedServiceId === (s.id || s._id)}
+          hideViewButton={hideViewButton}
         />
       ))}
     </div>
