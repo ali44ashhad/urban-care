@@ -216,6 +216,13 @@ function formatDate(dateString) {
   const client = booking.client || booking.clientId || {}
   const address = booking.address || {}
   const imageUrl = service.image || service.images?.[0]
+  const bookingCategory = service.category || (typeof service.categoryId === 'object' ? service.categoryId?.name : null)
+  const sameCategoryServices = servicesList.filter((s) => {
+    const sCat = s.category || (typeof s.categoryId === 'object' ? s.categoryId?.name : null)
+    const match = !bookingCategory || !sCat || (String(sCat).toLowerCase() === String(bookingCategory).toLowerCase())
+    const notCurrent = (s._id || s.id) !== (service._id || service.id)
+    return match && notCurrent
+  })
 
   const statusBadgeClass = {
     pending: 'bg-yellow-100 text-yellow-700',
@@ -516,12 +523,15 @@ function formatDate(dateString) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select service</option>
-                {servicesList.map((s) => (
+                {sameCategoryServices.map((s) => (
                   <option key={s._id || s.id} value={s._id || s.id}>
                     {s.title} {s.basePrice != null ? `(₹${s.basePrice})` : ''}
                   </option>
                 ))}
               </select>
+              {sameCategoryServices.length === 0 && servicesList.length > 0 && (
+                <p className="text-sm text-amber-600 mt-1">No other services in this category (&quot;{bookingCategory}&quot;) to add.</p>
+              )}
               <label className="block text-sm font-medium text-gray-700">Price (₹) — optional, uses service default if empty</label>
               <input
                 type="number"

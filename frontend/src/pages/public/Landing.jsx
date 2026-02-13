@@ -58,7 +58,7 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">Trusted pros for every home need</h2>
-              <p className="text-sm sm:text-base text-gray-600 max-w-2xl">Book verified technicians for AC, plumbing, electrical, cleaning and salon services — fast, reliable and with warranty.</p>
+              <p className="text-sm sm:text-base text-gray-600 max-w-2xl">Book verified technicians for AC, electrical and cleaning — fast, reliable and with warranty.</p>
             </div>
             <div className="w-full sm:w-auto">
               <Link to='/services' className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-4 py-2 text-lg rounded-2xl text-white"> Get started 
