@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import servicesService from '../../services/services.service';
 import categoriesService from '../../services/categories.service';
 import reviewsService from '../../services/reviews.service';
@@ -12,6 +12,7 @@ import { normalizeSlug, createSlug } from '../../utils/formatters';
 export default function CategoryServices() {
   const { category: categoryParam, subCategory: subCategoryParam } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthContext();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +89,9 @@ export default function CategoryServices() {
         setServices(servicesList);
         setPage(1);
         setHasMore(servicesList.length === PAGE_LIMIT);
-        setSelectedService(servicesList.length > 0 ? servicesList[0] : null);
+        const highlightId = location.state?.highlightServiceId;
+        const toSelect = highlightId && servicesList.find((s) => String(s._id || s.id) === String(highlightId));
+        setSelectedService(toSelect || (servicesList.length > 0 ? servicesList[0] : null));
         const subRes = await categoriesService.listSubcategories(category);
         const subs = subRes.data?.items || [];
         setSubcategories(Array.isArray(subs) ? subs : []);
@@ -115,7 +118,9 @@ export default function CategoryServices() {
           setServices(servicesList);
           setPage(1);
           setHasMore(servicesList.length === PAGE_LIMIT);
-          setSelectedService(servicesList.length > 0 ? servicesList[0] : null);
+          const highlightId = location.state?.highlightServiceId;
+          const toSelect = highlightId && servicesList.find((s) => String(s._id || s.id) === String(highlightId));
+          setSelectedService(toSelect || (servicesList.length > 0 ? servicesList[0] : null));
         }
       }
     } catch (err) {

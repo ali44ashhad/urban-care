@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import categoriesService from '../services/categories.service'
+import servicesService from '../services/services.service'
 import { createSlug } from '../utils/formatters'
 
 export default function HeroModern({ onSearch, onBook }) {
@@ -10,6 +11,7 @@ export default function HeroModern({ onSearch, onBook }) {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [current, setCurrent] = useState(0)
+  const [searching, setSearching] = useState(false)
 
   useEffect(() => {
     loadCategories()
@@ -35,8 +37,56 @@ export default function HeroModern({ onSearch, onBook }) {
     return () => clearInterval(id)
   }, [total])
 
-  const handleSearch = () => {
-    if (onSearch) onSearch(searchTerm)
+  const handleSearch = async () => {
+    const term = (searchTerm || '').trim()
+    if (!term) {
+      navigate('/services')
+      if (onSearch) onSearch('')
+      return
+    }
+    setSearching(true)
+    try {
+      const res = await servicesService.list({ q: term, limit: 10 })
+      const items = res.data?.items ?? res.data ?? []
+      const list = Array.isArray(items) ? items : []
+      if (list.length > 0) {
+        const service = list[0]
+        const catName = service.category || (typeof service.categoryId === 'object' ? service.categoryId?.name : null)
+        const matchedCategory = categories.find(
+          (c) => c.name === catName || (c.name && catName && c.name.toLowerCase() === catName.toLowerCase())
+        )
+        const categorySlug = matchedCategory?.slug
+          ? createSlug(matchedCategory.slug)
+          : createSlug(catName || 'services')
+        const serviceId = service._id || service.id
+        let subSlug = null
+        if (service.subCategoryId) {
+          try {
+            const subRes = await categoriesService.listSubcategories(matchedCategory?.slug || categorySlug)
+            const subs = subRes.data?.items ?? subRes.data ?? []
+            const subList = Array.isArray(subs) ? subs : []
+            const sub = subList.find(
+              (s) => String(s._id) === String(service.subCategoryId) || String(s.id) === String(service.subCategoryId)
+            )
+            if (sub?.slug) subSlug = createSlug(sub.slug)
+          } catch (_) {}
+        }
+        if (subSlug) {
+          navigate(`/services/${categorySlug}/${subSlug}`, { state: { highlightServiceId: serviceId } })
+        } else {
+          navigate(`/services/${categorySlug}`, { state: { highlightServiceId: serviceId } })
+        }
+      } else {
+        navigate('/services', { state: { searchQuery: term } })
+        if (onSearch) onSearch(term)
+      }
+    } catch (err) {
+      console.error('Search error:', err)
+      navigate('/services', { state: { searchQuery: term } })
+      if (onSearch) onSearch(term)
+    } finally {
+      setSearching(false)
+    }
   }
 
   const handleBookCurrent = () => {
@@ -97,7 +147,7 @@ export default function HeroModern({ onSearch, onBook }) {
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              {/* <div className="flex flex-col sm:flex-row gap-4 mb-10">
               
 
                 <button
@@ -106,7 +156,7 @@ export default function HeroModern({ onSearch, onBook }) {
                 >
                   Explore Services
                 </button>
-              </div>
+              </div> */}
 
               {/* Search Bar */}
               <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 sm:p-2 shadow-2xl hover:shadow-blue-500/20 transition-all">
@@ -126,12 +176,24 @@ export default function HeroModern({ onSearch, onBook }) {
                   </div>
                   <button
                     onClick={handleSearch}
-                    className="px-3 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg sm:rounded-xl font-semibold hover:shadow-lg transition-all flex-shrink-0 flex items-center justify-center"
+                    disabled={searching}
+                    className="px-3 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg sm:rounded-xl font-semibold hover:shadow-lg transition-all flex-shrink-0 flex items-center justify-center disabled:opacity-70 disabled:cursor-wait"
                   >
-                    <span className="hidden sm:inline">Search</span>
-                    <svg className="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    {searching ? (
+                      <span className="hidden sm:inline">Searching...</span>
+                    ) : (
+                      <span className="hidden sm:inline">Search</span>
+                    )}
+                    {searching ? (
+                      <svg className="w-4 h-4 sm:hidden animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>
