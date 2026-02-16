@@ -43,3 +43,16 @@ export function normalizeSlug(slug) {
     return createSlug(slug);
   }
 }
+
+/** Default warranty days when backend does not send or sends 0 */
+export const DEFAULT_WARRANTY_DAYS = 14;
+
+/**
+ * Warranty days to display: backend value if > 0, else default 14
+ * @param {object} service - service object with warrantyDurationDays
+ * @returns {number}
+ */
+export function getWarrantyDisplayDays(service) {
+  const days = service?.warrantyDurationDays;
+  return (days != null && Number(days) > 0) ? Number(days) : DEFAULT_WARRANTY_DAYS;
+}

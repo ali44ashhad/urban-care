@@ -19,7 +19,9 @@ const ServiceSchema = new Schema({
   images: [String],
   rating: { type: Number, default: 0, min: 0, max: 5 },
   reviewCount: { type: Number, default: 0 },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  hasWarranty: { type: Boolean, default: false },
+  warrantyDurationDays: { type: Number, default: 0 }
 }, { timestamps: true });
 
 ServiceSchema.index({ title: 'text', description: 'text' });

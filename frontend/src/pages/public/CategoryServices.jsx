@@ -8,7 +8,7 @@ import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuthContext } from '../../context/AuthContext';
 import { useCategoriesOptional } from '../../context/CategoriesContext';
-import { normalizeSlug, createSlug } from '../../utils/formatters';
+import { normalizeSlug, createSlug, getWarrantyDisplayDays } from '../../utils/formatters';
 
 export default function CategoryServices() {
   const { category: categoryParam, subCategory: subCategoryParam } = useParams();
@@ -486,6 +486,12 @@ export default function CategoryServices() {
                               <span>{service.durationMin} mins</span>
                             </div>
                           )}
+                          <div className="flex items-center gap-1 text-green-700 font-medium">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>{getWarrantyDisplayDays(service)} days</span>
+                          </div>
                           {service.rating && (
                             <div className="flex items-center gap-1">
                               <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
@@ -558,6 +564,13 @@ export default function CategoryServices() {
                           <span>{selectedService.durationMin} minutes</span>
                         </div>
                       )}
+
+                      <div className="flex items-center gap-2 text-green-700 mb-4">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        <span className="font-medium">{getWarrantyDisplayDays(selectedService)} days warranty</span>
+                      </div>
 
                       {selectedService.pricingOptions?.length > 0 ? (
                         <div className="mb-6">

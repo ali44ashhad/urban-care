@@ -30,6 +30,8 @@ export default function ServiceForm({ initial = null, onSaved = () => {}, onCanc
     variants: [{ name: 'Standard', priceModifier: 0 }],
     featured: false,
     isActive: true,
+    hasWarranty: true,
+    warrantyDurationDays: 14,
     ...initial
   })
   const [subcategories, setSubcategories] = useState([])
@@ -135,6 +137,8 @@ export default function ServiceForm({ initial = null, onSaved = () => {}, onCanc
     try {
       const payload = { ...data }
       if (!payload.subCategoryId) delete payload.subCategoryId
+      payload.warrantyDurationDays = payload.warrantyDurationDays ? Number(payload.warrantyDurationDays) : 0
+      payload.hasWarranty = payload.warrantyDurationDays > 0
       let res
       if (initial && initial._id) res = await servicesService.update(initial._id, payload)
       else res = await servicesService.create(payload)
@@ -247,6 +251,17 @@ export default function ServiceForm({ initial = null, onSaved = () => {}, onCanc
             onChange={(e) => setField('duration', e.target.value)}
             placeholder="e.g., 1-2 hours"
           />
+          <Input
+            label="Warranty (days)"
+            type="number"
+            min={0}
+            value={data.warrantyDurationDays ?? 0}
+            onChange={(e) => setField('warrantyDurationDays', e.target.value ? Number(e.target.value) : 0)}
+            placeholder="e.g. 14, 30, 90 (0 = no warranty)"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">Main Image</label>
             <input
