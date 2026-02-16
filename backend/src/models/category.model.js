@@ -12,5 +12,6 @@ const CategorySchema = new Schema({
 }, { timestamps: true });
 
 CategorySchema.index({ isActive: 1, order: 1 });
+CategorySchema.index({ slug: 1, isActive: 1 }); // fast lookup by slug in listSubcategoriesBySlug
 
 module.exports = mongoose.model('Category', CategorySchema);

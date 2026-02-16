@@ -23,5 +23,8 @@ const ServiceSchema = new Schema({
 }, { timestamps: true });
 
 ServiceSchema.index({ title: 'text', description: 'text' });
+ServiceSchema.index({ isActive: 1, subCategoryId: 1 });
+ServiceSchema.index({ isActive: 1, category: 1 });
+ServiceSchema.index({ isActive: 1, title: 1 }); // fast filter for titleContains (e.g. Consultation on landing)
 
 module.exports = mongoose.model('Service', ServiceSchema);

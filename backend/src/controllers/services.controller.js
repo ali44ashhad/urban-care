@@ -4,15 +4,19 @@ const SubCategory = require('../models/subcategory.model');
 
 // List services (with text search, category, subCategory & pagination)
 async function listServices(req, res) {
-  const { q, category, subCategory: subCategorySlug, page = 1, limit = 20 } = req.query;
+  const { q, category, subCategory: subCategorySlug, titleContains, page = 1, limit = 20 } = req.query;
   const filter = { isActive: true };
-  if (q) filter.$text = { $search: q };
+  if (titleContains) {
+    filter.title = new RegExp(String(titleContains).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  } else if (q) {
+    filter.$text = { $search: q };
+  }
   if (category) {
     // When subCategory slug is provided, filter by subCategoryId
     if (subCategorySlug) {
-      const cat = await Category.findOne({ $or: [{ name: new RegExp(category, 'i') }, { slug: category }] });
+      const cat = await Category.findOne({ $or: [{ name: new RegExp(category, 'i') }, { slug: category }] }).lean();
       if (cat) {
-        const sub = await SubCategory.findOne({ categoryId: cat._id, slug: subCategorySlug, isActive: true });
+        const sub = await SubCategory.findOne({ categoryId: cat._id, slug: subCategorySlug, isActive: true }).lean();
         if (sub) filter.subCategoryId = sub._id;
         else return res.json({ items: [], page: Number(page) });
       } else {
@@ -27,7 +31,8 @@ async function listServices(req, res) {
   const items = await Service.find(filter)
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(Number(limit));
+    .limit(Number(limit))
+    .lean();
   res.json({ items, page: Number(page) });
 }
 

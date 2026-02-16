@@ -15,5 +15,6 @@ const SubCategorySchema = new Schema({
 
 SubCategorySchema.index({ categoryId: 1, slug: 1 }, { unique: true });
 SubCategorySchema.index({ categoryId: 1, order: 1 });
+SubCategorySchema.index({ categoryId: 1, slug: 1, isActive: 1 }); // fast lookup in listServices when category+subCategory in URL
 
 module.exports = mongoose.model('SubCategory', SubCategorySchema);

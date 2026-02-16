@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import servicesService from '../../services/services.service';
 import categoriesService from '../../services/categories.service';
@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuthContext } from '../../context/AuthContext';
+import { useCategoriesOptional } from '../../context/CategoriesContext';
 import { normalizeSlug, createSlug } from '../../utils/formatters';
 
 export default function CategoryServices() {
@@ -14,6 +15,7 @@ export default function CategoryServices() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthContext();
+  const { categories: allCategories, loading: categoriesLoading } = useCategoriesOptional();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -22,7 +24,6 @@ export default function CategoryServices() {
   const [categoryDetails, setCategoryDetails] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
   const [subCategoryDetails, setSubCategoryDetails] = useState(null);
-  const [allCategories, setAllCategories] = useState([]);
   const [serviceReviews, setServiceReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -42,32 +43,27 @@ export default function CategoryServices() {
     }
   }, [categoryParam, subCategoryParam, category, subCategory, navigate]);
 
-  useEffect(() => {
-    loadCategoryAndServices();
-  }, [category, subCategory]);
-
-  useEffect(() => {
-    if (selectedService) {
-      loadServiceReviews(selectedService._id);
-    }
-  }, [selectedService]);
-
-  async function loadCategoryAndServices() {
+  const loadCategoryAndServices = useCallback(async () => {
     setLoading(true);
     setSubcategories([]);
     setSubCategoryDetails(null);
+    const categories = allCategories;
     try {
-      const categoriesRes = await categoriesService.list();
-      const categories = categoriesRes.data.items || categoriesRes.data || [];
-      setAllCategories(categories);
-
       let matchedCategory = categories.find(cat => cat.slug === category);
       if (!matchedCategory) {
         matchedCategory = categories.find(cat => normalizeSlug(cat.slug) === category);
       }
 
       if (!matchedCategory) {
-        console.warn('No category found for slug:', category);
+        if (categories.length === 0 && !categoriesLoading) {
+          const fallbackRes = await categoriesService.list();
+          const fallback = fallbackRes.data?.items || fallbackRes.data || [];
+          const arr = Array.isArray(fallback) ? fallback : [];
+          matchedCategory = arr.find(cat => cat.slug === category) || arr.find(cat => normalizeSlug(cat.slug) === category);
+        }
+      }
+
+      if (!matchedCategory) {
         setCategoryName(category);
         setServices([]);
         setLoading(false);
@@ -78,27 +74,28 @@ export default function CategoryServices() {
       setCategoryDetails(matchedCategory);
 
       if (subCategory) {
-        // Sub-category in URL: fetch services for this category + subcategory
-        const res = await servicesService.list({
-          category: matchedCategory.name,
-          subCategory,
-          page: 1,
-          limit: PAGE_LIMIT
-        });
-        const servicesList = res.data?.items || res.data || [];
+        const [servicesRes, subRes] = await Promise.all([
+          servicesService.list({
+            category: matchedCategory.name,
+            subCategory,
+            page: 1,
+            limit: PAGE_LIMIT
+          }),
+          categoriesService.listSubcategories(category)
+        ]);
+        const servicesList = servicesRes.data?.items || servicesRes.data || [];
+        const subs = subRes.data?.items || [];
+        const subList = Array.isArray(subs) ? subs : [];
         setServices(servicesList);
         setPage(1);
         setHasMore(servicesList.length === PAGE_LIMIT);
         const highlightId = location.state?.highlightServiceId;
         const toSelect = highlightId && servicesList.find((s) => String(s._id || s.id) === String(highlightId));
         setSelectedService(toSelect || (servicesList.length > 0 ? servicesList[0] : null));
-        const subRes = await categoriesService.listSubcategories(category);
-        const subs = subRes.data?.items || [];
-        setSubcategories(Array.isArray(subs) ? subs : []);
-        const currentSub = subs.find(s => (s.slug || '').toLowerCase() === subCategory.toLowerCase());
+        setSubcategories(subList);
+        const currentSub = subList.find(s => (s.slug || '').toLowerCase() === subCategory.toLowerCase());
         setSubCategoryDetails(currentSub || null);
       } else {
-        // No sub-category: fetch sub-categories for this category
         const subRes = await categoriesService.listSubcategories(category);
         const subs = subRes.data?.items || [];
         const subList = Array.isArray(subs) ? subs : [];
@@ -108,7 +105,6 @@ export default function CategoryServices() {
           setServices([]);
           setSelectedService(null);
         } else {
-          // No sub-categories: show all services in category (backward compatible)
           const res = await servicesService.list({
             category: matchedCategory.name,
             page: 1,
@@ -129,7 +125,17 @@ export default function CategoryServices() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [category, subCategory, allCategories, categoriesLoading, location.state?.highlightServiceId]);
+
+  useEffect(() => {
+    loadCategoryAndServices();
+  }, [loadCategoryAndServices]);
+
+  useEffect(() => {
+    if (selectedService) {
+      loadServiceReviews(selectedService._id);
+    }
+  }, [selectedService]);
 
   async function loadMoreServices() {
     if (loadingMore || !hasMore || !categoryDetails) return;
@@ -230,7 +236,8 @@ export default function CategoryServices() {
     }))
   }
 
-  if (loading) {
+  const waitingForCategories = categoriesLoading && allCategories.length === 0;
+  if (loading || waitingForCategories) {
     return (
       <LoadingSpinner/>
     );

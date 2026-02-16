@@ -9,27 +9,59 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import servicesService from '../../services/services.service'
 
+const CACHE_KEY = 'landing_consultation_services'
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5 min
+
+function getCached() {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const { data, at } = JSON.parse(raw)
+    if (Date.now() - at > CACHE_TTL_MS) return null
+    return Array.isArray(data) ? data : null
+  } catch {
+    return null
+  }
+}
+
+function setCached(list) {
+  try {
+    if (Array.isArray(list)) sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: list, at: Date.now() }))
+  } catch {}
+}
+
 export default function Landing() {
   const navigate = useNavigate()
-  const [services, setServices] = useState([])
+  const [services, setServices] = useState(() => getCached() || [])
   const [selectedService, setSelectedService] = useState(null)
   const [showServiceModal, setShowServiceModal] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => !getCached())
 
   useEffect(() => {
-    loadServices()
-  }, [])
-
-  async function loadServices() {
-    try {
-      const res = await servicesService.list()
-      setServices(res.data || [])
-    } catch (err) {
-      console.error('Failed to load services:', err)
-    } finally {
+    const cached = getCached()
+    if (cached?.length) {
+      setServices(cached)
       setLoading(false)
     }
-  }
+
+    async function fetchServices() {
+      try {
+        const res = await servicesService.list({
+          titleContains: 'Consultation',
+          limit: 10
+        })
+        const list = res.data?.items ?? res.data
+        const arr = Array.isArray(list) ? list : []
+        setServices(arr)
+        setCached(arr)
+      } catch (err) {
+        console.error('Failed to load services:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchServices()
+  }, [])
 
   const handleServiceClick = (service) => {
     setSelectedService(service)
@@ -67,20 +99,31 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Featured Services Section - AC Service */}
-        {!loading && services.length > 0 && (
-          <section id="services-scroll" className="mb-8 sm:mb-12">
-            <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
-                Popular Services
-              </h2>
-              <p className="text-sm sm:text-base text-gray-600">
-                Most booked services with verified professionals
-              </p>
-            </div>
+        {/* Popular Services - Consultation */}
+        <section id="services-scroll" className="mb-8 sm:mb-12">
+          <div className="mb-6">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
+              Popular Services
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Most booked services with verified professionals
+            </p>
+          </div>
 
+          {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.slice(0, 6).map((service) => (
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse">
+                  <div className="h-40 bg-gray-200 rounded-lg mb-4" />
+                  <div className="h-5 bg-gray-200 rounded w-3/4 mb-2" />
+                  <div className="h-4 bg-gray-100 rounded w-full mb-2" />
+                  <div className="h-4 bg-gray-100 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : services.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.slice(0, 3).map((service) => (
                 <ServiceCard
                   key={service._id || service.id}
                   service={service}
@@ -89,8 +132,8 @@ export default function Landing() {
                 />
               ))}
             </div>
-          </section>
-        )}
+          ) : null}
+        </section>
 
         <div id="services-scroll">
           <ServiceCategories />

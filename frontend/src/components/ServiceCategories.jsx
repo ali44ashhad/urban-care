@@ -1,35 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import categoriesService from '../services/categories.service'
+import { useCategoriesOptional } from '../context/CategoriesContext'
 import { createSlug } from '../utils/formatters'
-// import LoadingSpinner from './ui/LoadingSpinner'
 
 export default function ServiceCategories() {
   const navigate = useNavigate()
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadCategories()
-  }, [])
-
-  const loadCategories = async () => {
-    try {
-      const res = await categoriesService.list({ isActive: 'true' })
-      setCategories(res.data.items || res.data || [])
-    } catch (err) {
-      console.error('Failed to load categories:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // if (loading) {
-  //   return (
-  //     <LoadingSpinner />
-  //   )
-  // }
+  const { categories } = useCategoriesOptional()
 
   return (
     <section className="py-8 sm:py-12 ">

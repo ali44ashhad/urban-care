@@ -72,7 +72,7 @@ async function listByCategory(req, res) {
     if (!categoryId) {
       return res.status(400).json({ message: 'categoryId is required' });
     }
-    const items = await SubCategory.find({ categoryId }).sort({ order: 1, name: 1 });
+    const items = await SubCategory.find({ categoryId }).sort({ order: 1, name: 1 }).lean();
     res.json({ items });
   } catch (err) {
     console.error('List subcategories error:', err);

@@ -23,7 +23,8 @@ async function listCategories(req, res) {
     const categories = await Category.find(filter)
       .sort({ order: 1, name: 1 })
       .skip(skip)
-      .limit(Number(limit));
+      .limit(Number(limit))
+      .lean();
     
     const total = await Category.countDocuments(filter);
     
@@ -60,7 +61,7 @@ async function getCategory(req, res) {
 async function getCategoryBySlug(req, res) {
   try {
     const { slug } = req.params;
-    const category = await Category.findOne({ slug, isActive: true });
+    const category = await Category.findOne({ slug, isActive: true }).lean();
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
     }
@@ -75,12 +76,13 @@ async function getCategoryBySlug(req, res) {
 async function listSubcategoriesBySlug(req, res) {
   try {
     const { slug } = req.params;
-    const category = await Category.findOne({ slug, isActive: true });
+    const category = await Category.findOne({ slug, isActive: true }).lean();
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
     }
     const subcategories = await SubCategory.find({ categoryId: category._id, isActive: true })
-      .sort({ order: 1, name: 1 });
+      .sort({ order: 1, name: 1 })
+      .lean();
     res.json({ items: subcategories, category });
   } catch (err) {
     console.error('List subcategories error:', err);

@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './index.css' // Tailwind base imports + app css
 import { AuthProvider } from './context/AuthContext'
+import { CategoriesProvider } from './context/CategoriesContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { ProviderProvider } from './context/ProviderContext'
 import ToastManager from './components/notifications/ToastManager'
@@ -23,13 +24,14 @@ root.render(
     <BrowserRouter>
       {/* AuthProvider should wrap the entire app to provide user state */}
       <AuthProvider>
-        {/* Notifications require Auth to know user; keep it global */}
-        <NotificationProvider>
-          <ProviderProvider>
-            <App />
-            <ToastManager />
-          </ProviderProvider>
-        </NotificationProvider>
+        <CategoriesProvider>
+          <NotificationProvider>
+            <ProviderProvider>
+              <App />
+              <ToastManager />
+            </ProviderProvider>
+          </NotificationProvider>
+        </CategoriesProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

@@ -1,33 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { useCategoriesOptional } from '../context/CategoriesContext'
 import categoriesService from '../services/categories.service'
 import servicesService from '../services/services.service'
 import { createSlug } from '../utils/formatters'
 
 export default function HeroModern({ onSearch, onBook }) {
   const navigate = useNavigate()
+  const { categories } = useCategoriesOptional()
   const [searchTerm, setSearchTerm] = useState('')
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
   const [current, setCurrent] = useState(0)
   const [searching, setSearching] = useState(false)
-
-  useEffect(() => {
-    loadCategories()
-  }, [])
-
-  const loadCategories = async () => {
-    try {
-      const res = await categoriesService.list({ isActive: 'true' })
-      const cats = res.data.items || res.data || []
-      setCategories(cats)
-    } catch (err) {
-      console.error('Failed to load categories:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const total = categories.length
 
